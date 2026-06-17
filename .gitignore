@@ -1,0 +1,7 @@
+# IDE
+.idea/
+*.iml
+
+# Secret and config env files (never commit real values)
+**/overlays/**/config.env
+**/overlays/**/secrets-*.env
