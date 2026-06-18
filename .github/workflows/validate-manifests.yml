@@ -1,0 +1,83 @@
+name: Validate K8s Manifests
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'k8s-manifests/**'
+      - '.github/workflows/validate-manifests.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'k8s-manifests/**'
+
+jobs:
+  validate:
+    name: Validate K8s manifests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up tools
+        run: |
+          # Install kustomize
+          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+          sudo mv kustomize /usr/local/bin/
+
+          # Install kubeval
+          mkdir -p /tmp/kubeval && cd /tmp/kubeval
+          curl -L https://github.com/instrumenta/kubeval/releases/latest/download/kubeval-linux-amd64.tar.gz | tar xz
+          sudo mv kubeval /usr/local/bin/
+
+          # Install kubesec
+          mkdir -p /tmp/kubesec && cd /tmp/kubesec
+          curl -L https://github.com/controlplaneio/kubesec/releases/latest/download/kubesec_linux_amd64.tar.gz | tar xz
+          sudo mv kubesec /usr/local/bin/
+
+          # Install kube-score
+          mkdir -p /tmp/kube-score && cd /tmp/kube-score
+          curl -L https://github.com/zegl/kube-score/releases/latest/download/kube-score_linux_amd64.tar.gz | tar xz
+          sudo mv kube-score /usr/local/bin/
+
+      - name: Build kustomize overlays
+        run: |
+          echo "Building eva-seqcol dev overlay..."
+          kustomize build k8s-manifests/eva-seqcol/overlays/dev > /tmp/eva-seqcol-dev.yaml
+          echo "✓ eva-seqcol dev overlay built successfully"
+
+          echo "Building eva-seqcol local overlay..."
+          kustomize build k8s-manifests/eva-seqcol/overlays/local > /tmp/eva-seqcol-local.yaml
+          echo "✓ eva-seqcol local overlay built successfully"
+
+      - name: Validate schemas with kubeval
+        run: |
+          echo "Validating schemas..."
+          kubeval /tmp/eva-seqcol-dev.yaml
+          kubeval /tmp/eva-seqcol-local.yaml
+          echo "✓ All manifests passed schema validation"
+
+      - name: Security scan with kubesec
+        run: |
+          echo "Running security scan..."
+          echo "=== Scanning eva-seqcol-dev ==="
+          kubesec scan /tmp/eva-seqcol-dev.yaml || true
+          echo "=== Scanning eva-seqcol-local ==="
+          kubesec scan /tmp/eva-seqcol-local.yaml || true
+
+      - name: Lint best practices with kube-score
+        run: |
+          echo "Linting best practices..."
+          echo "=== Linting eva-seqcol-dev ==="
+          kube-score score /tmp/eva-seqcol-dev.yaml || true
+          echo "=== Linting eva-seqcol-local ==="
+          kube-score score /tmp/eva-seqcol-local.yaml || true
+
+      - name: Upload rendered manifests
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rendered-manifests
+          path: /tmp/eva-seqcol-*.yaml
+          retention-days: 30
