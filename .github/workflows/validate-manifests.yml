@@ -41,43 +41,35 @@ jobs:
           curl -L https://github.com/zegl/kube-score/releases/latest/download/kube-score_linux_amd64.tar.gz | tar xz
           sudo mv kube-score /usr/local/bin/
 
-      - name: Build kustomize overlays
+      - name: Validate all overlays
         run: |
-          echo "Building eva-seqcol dev overlay..."
-          kustomize build k8s-manifests/eva-seqcol/overlays/dev > /tmp/eva-seqcol-dev.yaml
-          echo "✓ eva-seqcol dev overlay built successfully"
+          # Discover all overlays under k8s-manifests/*/overlays/*
+          overlays=$(find k8s-manifests/*/overlays -mindepth 1 -maxdepth 1 -type d | sort)
 
-          echo "Building eva-seqcol local overlay..."
-          kustomize build k8s-manifests/eva-seqcol/overlays/local > /tmp/eva-seqcol-local.yaml
-          echo "✓ eva-seqcol local overlay built successfully"
+          if [ -z "$overlays" ]; then
+            echo "No overlays found — nothing to validate."
+            exit 0
+          fi
 
-      - name: Validate schemas with kubeval
-        run: |
-          echo "Validating schemas..."
-          kubeval /tmp/eva-seqcol-dev.yaml
-          kubeval /tmp/eva-seqcol-local.yaml
-          echo "✓ All manifests passed schema validation"
+          for overlay in $overlays; do
+            echo ""
+            echo "════════════════════════════════════════"
+            echo "Overlay: $overlay"
+            echo "════════════════════════════════════════"
 
-      - name: Security scan with kubesec
-        run: |
-          echo "Running security scan..."
-          echo "=== Scanning eva-seqcol-dev ==="
-          kubesec scan /tmp/eva-seqcol-dev.yaml || true
-          echo "=== Scanning eva-seqcol-local ==="
-          kubesec scan /tmp/eva-seqcol-local.yaml || true
+            manifest="/tmp/$(echo $overlay | tr '/' '-').yaml"
 
-      - name: Lint best practices with kube-score
-        run: |
-          echo "Linting best practices..."
-          echo "=== Linting eva-seqcol-dev ==="
-          kube-score score /tmp/eva-seqcol-dev.yaml || true
-          echo "=== Linting eva-seqcol-local ==="
-          kube-score score /tmp/eva-seqcol-local.yaml || true
+            echo "--- Build ---"
+            kustomize build "$overlay" > "$manifest"
+            echo "✓ Built successfully"
 
-      - name: Upload rendered manifests
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: rendered-manifests
-          path: /tmp/eva-seqcol-*.yaml
-          retention-days: 30
+            echo "--- Schema validation (kubeval) ---"
+            kubeval "$manifest"
+            echo "✓ Schema valid"
+
+            echo "--- Security scan (kubesec) ---"
+            kubesec scan "$manifest" || true
+
+            echo "--- Best practices (kube-score) ---"
+            kube-score score "$manifest" || true
+          done

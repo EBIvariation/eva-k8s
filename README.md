@@ -100,6 +100,24 @@ kubectl apply -k k8s-manifests/eva-seqcol/overlays/local
 kubectl port-forward -n eva-seqcol-local svc/eva-seqcol 8081:8081
 ```
 
+## Manifest validation
+
+All manifests are validated on every push and pull request to `main` via a GitHub Actions. 
+The workflow:
+
+- **Kustomize build** — ensures all overlays build without syntax errors
+- **Kubeval** — validates manifests against the Kubernetes API schema
+- **Kubesec** — security scanning (resource limits, securityContext, etc.)
+- **Kube-score** — best practices linting (readiness probes, labels, etc.)
+
+Each overlay under `k8s-manifests/*/overlays/*` is discovered and validated automatically.
+
+To validate locally before pushing:
+
+```bash
+kustomize build k8s-manifests/eva-seqcol/overlays/dev
+```
+
 ## Secrets management
 
 - Actual `.env` files (`config.env`, `secrets-db.env`, `secrets-admin.env`) are **never committed** — they should be listed in `.gitignore`.
