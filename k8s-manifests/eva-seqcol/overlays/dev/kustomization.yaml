@@ -12,7 +12,7 @@ patches:
 # Override the image tag for this environment
 images:
   - name: ebivariation/eva-seqcol
-    newTag: v0.0.1 # Change this when deploying new versions
+    newTag: dev-9f0f49f1
 # ConfigMap loaded from env file (not committed to git)
 # Copy config.env.example to config.env and fill in real values
 configMapGenerator:
@@ -29,4 +29,3 @@ secretGenerator:
   - name: eva-seqcol-admin-credentials
     envs:
       - secrets-admin.env
-newTag: dev-9f0f49f1
