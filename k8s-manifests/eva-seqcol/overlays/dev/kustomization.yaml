@@ -29,4 +29,4 @@ secretGenerator:
   - name: eva-seqcol-admin-credentials
     envs:
       - secrets-admin.env
-newTag: dev-f60610fd
+newTag: dev-9f0f49f1
