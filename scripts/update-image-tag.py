@@ -9,11 +9,14 @@ from pathlib import Path
 def update_image_tag(file_path: str, new_tag: str) -> bool:
     """
     Update the newTag value in a kustomization.yaml file.
+
+    Returns True if update was successful, False otherwise.
     """
     try:
         file = Path(file_path)
         if not file.exists():
             print(f"Error: File not found: {file_path}")
+            return False
 
         # Read and parse YAML
         with open(file, 'r') as f:
@@ -21,14 +24,17 @@ def update_image_tag(file_path: str, new_tag: str) -> bool:
 
         if data is None:
             print(f"Error: Empty or invalid YAML file: {file_path}")
+            return False
 
         # Check if images section exists
         if 'images' not in data:
             print(f"Error: No 'images' section found in {file_path}")
+            return False
 
         images = data['images']
         if not isinstance(images, list) or len(images) == 0:
             print(f"Error: 'images' section is empty or not a list in {file_path}")
+            return False
 
         # Update newTag in the first image (usually the only one)
         old_tag = images[0].get('newTag', 'unknown')
@@ -40,11 +46,14 @@ def update_image_tag(file_path: str, new_tag: str) -> bool:
 
         print(f"✓ Updated {file_path}")
         print(f"  {old_tag} → {new_tag}")
+        return True
 
     except yaml.YAMLError as e:
         print(f"Error parsing YAML: {e}")
+        return False
     except Exception as e:
         print(f"Error: {e}")
+        return False
 
 
 def main():
