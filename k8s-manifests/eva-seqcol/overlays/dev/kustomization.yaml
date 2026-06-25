@@ -9,7 +9,7 @@ patches:
 - path: ingress-patch.yaml
 images:
 - name: ebivariation/eva-seqcol
-  newTag: dev-ad7cb7a5
+  newTag: dev-7ffbab14
 configMapGenerator:
 - name: eva-seqcol-config
   behavior: replace
