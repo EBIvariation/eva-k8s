@@ -29,23 +29,8 @@ images:
   newName: eva-seqcol
   newTag: local
 
-# Override config for local development
-configMapGenerator:
-- name: eva-seqcol-config
-  behavior: merge
-  literals:
-  - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/seqcol_db
-  - DDL_BEHAVIOUR=update
-
-# Generate secrets for local testing
+# Generate secret with application.properties for local testing
 secretGenerator:
-- name: eva-seqcol-db-credentials
-  literals:
-  - host=postgres
-  - port=5432
-  - username=seqcol_user
-  - password=seqcol_password
-- name: eva-seqcol-admin-credentials
-  literals:
-  - username=admin
-  - password=admin123
+- name: eva-seqcol-config
+  files:
+  - application.properties

@@ -10,15 +10,7 @@ patches:
 images:
 - name: ebivariation/eva-seqcol
   newTag: dev-7ffbab14
-configMapGenerator:
-- name: eva-seqcol-config
-  behavior: replace
-  envs:
-  - config.env
 secretGenerator:
-- name: eva-seqcol-db-credentials
-  envs:
-  - secrets-db.env
-- name: eva-seqcol-admin-credentials
-  envs:
-  - secrets-admin.env
+- name: eva-seqcol-config
+  files:
+  - application.properties
