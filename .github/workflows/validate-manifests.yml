@@ -23,7 +23,7 @@ jobs:
       - name: Set up tools
         env:
           KUSTOMIZE_VERSION: v5.8.1
-          KUBEVAL_VERSION: v0.16.1
+          KUBECONFORM_VERSION: v0.8.0
           KUBESEC_VERSION: v2.14.2
           KUBE_SCORE_VERSION: v1.20.0
         run: |
@@ -32,10 +32,10 @@ jobs:
           curl -L https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/${KUSTOMIZE_VERSION}/kustomize_${KUSTOMIZE_VERSION}_linux_amd64.tar.gz | tar xz
           sudo mv kustomize /usr/local/bin/
 
-          # Install kubeval
-          mkdir -p /tmp/kubeval && cd /tmp/kubeval
-          curl -L https://github.com/instrumenta/kubeval/releases/download/${KUBEVAL_VERSION}/kubeval-linux-amd64.tar.gz | tar xz
-          sudo mv kubeval /usr/local/bin/
+          # Install kubeconform (replaces abandoned kubeval; bundles its own schemas)
+          mkdir -p /tmp/kubeconform && cd /tmp/kubeconform
+          curl -L https://github.com/yannh/kubeconform/releases/download/${KUBECONFORM_VERSION}/kubeconform-linux-amd64.tar.gz | tar xz
+          sudo mv kubeconform /usr/local/bin/
 
           # Install kubesec
           mkdir -p /tmp/kubesec && cd /tmp/kubesec
@@ -80,8 +80,8 @@ jobs:
 
             echo "✓ Built successfully"
 
-            echo "--- Schema validation (kubeval) ---"
-            kubeval "$manifest"
+            echo "--- Schema validation (kubeconform) ---"
+            kubeconform -strict "$manifest"
             echo "✓ Schema valid"
 
             echo "--- Security scan (kubesec) ---"
