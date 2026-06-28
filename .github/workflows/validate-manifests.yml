@@ -21,24 +21,30 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Set up tools
+        env:
+          KUSTOMIZE_VERSION: v5.8.1
+          KUBEVAL_VERSION: v0.16.1
+          KUBESEC_VERSION: v2.14.2
+          KUBE_SCORE_VERSION: v1.20.0
         run: |
           # Install kustomize
-          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+          mkdir -p /tmp/kustomize && cd /tmp/kustomize
+          curl -L https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/${KUSTOMIZE_VERSION}/kustomize_${KUSTOMIZE_VERSION}_linux_amd64.tar.gz | tar xz
           sudo mv kustomize /usr/local/bin/
 
           # Install kubeval
           mkdir -p /tmp/kubeval && cd /tmp/kubeval
-          curl -L https://github.com/instrumenta/kubeval/releases/latest/download/kubeval-linux-amd64.tar.gz | tar xz
+          curl -L https://github.com/instrumenta/kubeval/releases/download/${KUBEVAL_VERSION}/kubeval-linux-amd64.tar.gz | tar xz
           sudo mv kubeval /usr/local/bin/
 
           # Install kubesec
           mkdir -p /tmp/kubesec && cd /tmp/kubesec
-          curl -L https://github.com/controlplaneio/kubesec/releases/latest/download/kubesec_linux_amd64.tar.gz | tar xz
+          curl -L https://github.com/controlplaneio/kubesec/releases/download/${KUBESEC_VERSION}/kubesec_linux_amd64.tar.gz | tar xz
           sudo mv kubesec /usr/local/bin/
 
           # Install kube-score
           mkdir -p /tmp/kube-score && cd /tmp/kube-score
-          curl -L https://github.com/zegl/kube-score/releases/latest/download/kube-score_linux_amd64.tar.gz | tar xz
+          curl -L https://github.com/zegl/kube-score/releases/download/${KUBE_SCORE_VERSION}/kube-score_${KUBE_SCORE_VERSION#v}_linux_amd64.tar.gz | tar xz
           sudo mv kube-score /usr/local/bin/
 
       - name: Validate all overlays
