@@ -118,7 +118,7 @@ kubectl apply -k k8s-manifests/eva-seqcol/overlays/dev
 # Generate application.properties for local profile
 python scripts/maven-settings-to-properties.py \
   --maven_file ~/.m2/settings.xml \
-  --profile local \
+  --profile localhost \
   --property_set eva-seqcol \
   --output k8s-manifests/eva-seqcol/overlays/local/application.properties
 
