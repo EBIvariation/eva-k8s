@@ -2,6 +2,5 @@
 .idea/
 *.iml
 
-# Secret and config env files (never commit real values)
-**/overlays/**/config.env
-**/overlays/**/secrets-*.env
+# Generated at deploy time from Maven settings.xml — never commit
+**/overlays/**/application.properties
