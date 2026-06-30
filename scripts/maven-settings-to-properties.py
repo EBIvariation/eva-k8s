@@ -5,25 +5,25 @@ import argparse
 import csv
 from pathlib import Path
 
-try:
-    from lxml import etree as et
-except ImportError:
-    print("Error: lxml is required but not installed")
-    sys.exit(1)
-
+from lxml import etree as et
 from ebi_eva_internal_pyutils.config_utils import get_properties_from_xml_file
 
 
+# Mapping format: { spring_property: source }
+# source is either a Maven property name to look up, or '=<literal>' for a hard-coded value.
+# Example: 'spring.jpa.hibernate.ddl-auto': '=update'
+
+LITERAL_PREFIX = '='
+
 EVA_SEQCOL_MAPPING = {
-    'app.db.url':            'spring.datasource.url',
-    'app.db.username':       'spring.datasource.username',
-    'app.db.password':       'spring.datasource.password',
-    'app.ddl.behaviour':     'spring.jpa.hibernate.ddl-auto',
-    'app.admin.username':    'controller.auth.admin.username',
-    'app.admin.password':    'controller.auth.admin.password',
-    'app.ftp.proxy.host':    'ftp.proxy.host',
-    'app.ftp.proxy.port':    'ftp.proxy.port',
-    'app.scaffolds.enabled': 'config.scaffolds.enabled',
+    'spring.datasource.url':           'eva.evapro.jdbc.url',
+    'spring.datasource.username':      'eva.evapro.user',
+    'spring.datasource.password':      'eva.evapro.password',
+    'spring.jpa.hibernate.ddl-auto':   '=update',
+    'controller.auth.admin.username':  'seqcol.admin-user',
+    'controller.auth.admin.password':  'seqcol.password',
+    'ftp.proxy.host':                  '=null',
+    'ftp.proxy.port':                  '=0'
 }
 
 PROPERTY_SETS = {
@@ -34,8 +34,9 @@ PROPERTY_SETS = {
 def load_csv_mapping(csv_file: str) -> dict:
     """
     Load property mapping from CSV file.
-    CSV format: maven_property,spring_property (with optional header row).
-    Returns ordered dict mapping maven properties to spring properties.
+    CSV format: spring_property,source (with optional header row).
+    'source' is either a Maven property name or '=<literal>' for a hard-coded value.
+    Returns an ordered dict mapping spring properties to their sources.
     """
     mapping = {}
     try:
@@ -47,18 +48,18 @@ def load_csv_mapping(csv_file: str) -> dict:
                 return None
 
             start_row = 0
-            if len(rows[0]) == 2 and rows[0][0].lower() == 'maven_property':
+            if len(rows[0]) == 2 and rows[0][0].lower() == 'spring_property':
                 start_row = 1
 
             for i, row in enumerate(rows[start_row:], start=start_row + 1):
                 if len(row) != 2:
                     print(f"Error: Invalid CSV format at line {i}: expected 2 columns, got {len(row)}")
                     return None
-                maven_key, spring_key = row[0].strip(), row[1].strip()
-                if not maven_key or not spring_key:
-                    print(f"Error: Empty property names in CSV at line {i}")
+                spring_key, source = row[0].strip(), row[1].strip()
+                if not spring_key or not source:
+                    print(f"Error: Empty values in CSV at line {i}")
                     return None
-                mapping[maven_key] = spring_key
+                mapping[spring_key] = source
 
         if not mapping:
             print(f"Error: No property mappings found in {csv_file}")
@@ -92,19 +93,21 @@ def convert_maven_to_properties(maven_file: str, profile: str, mapping: dict, ou
         print(f"Error: Profile '{profile}' not found in {maven_file}")
         return False
 
-    missing_props = []
-    for maven_key in mapping.keys():
-        if maven_key not in maven_props:
-            missing_props.append(maven_key)
-
+    missing_props = [
+        source for source in mapping.values()
+        if not source.startswith(LITERAL_PREFIX) and source not in maven_props
+    ]
     if missing_props:
         for prop in missing_props:
             print(f"Error: Required Maven property '{prop}' not found in profile '{profile}'")
         return False
 
     lines = []
-    for maven_key, spring_key in mapping.items():
-        value = maven_props[maven_key]
+    for spring_key, source in mapping.items():
+        if source.startswith(LITERAL_PREFIX):
+            value = source[len(LITERAL_PREFIX):]
+        else:
+            value = maven_props[source]
         lines.append(f"{spring_key}={value if value is not None else ''}")
 
     content = '\n'.join(lines) + '\n'
@@ -144,7 +147,7 @@ def main():
     mapping_group.add_argument(
         "--mapping-csv",
         metavar="FILE",
-        help="CSV file with property mappings (maven_property,spring_property)"
+        help="CSV file with property mappings (spring_property,source) where source is a Maven property name or '=<literal>'"
     )
 
     parser.add_argument("--output", metavar="FILE", help="Output file path (defaults to stdout)")
