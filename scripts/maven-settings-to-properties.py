@@ -113,13 +113,10 @@ def convert_maven_to_properties(maven_file: str, profile: str, mapping: dict, ou
     content = '\n'.join(lines) + '\n'
 
     try:
-        if output_path:
-            Path(output_path).write_text(content)
-            print(f"✓ Converted {maven_file}")
-            print(f"  Profile: {profile}")
-            print(f"  Output: {output_path}")
-        else:
-            sys.stdout.write(content)
+        Path(output_path).write_text(content)
+        print(f"✓ Converted {maven_file}")
+        print(f"  Profile: {profile}")
+        print(f"  Output: {output_path}")
         return True
     except OSError as e:
         print(f"Error: Could not write to {output_path}: {e}")
@@ -135,8 +132,11 @@ def main():
         "--maven_file", required=True, metavar="FILE", help="Path to Maven settings.xml file"
     )
     parser.add_argument(
-        "--profile", required=True, metavar="PROFILE", help="Maven profile ID (e.g. development, production)"
+        "--profile", required=True, metavar="PROFILE",
+        help="Maven profile ID (e.g. development, production)"
     )
+    parser.add_argument("--output", required=True, metavar="FILE",
+                        help="Output file path (defaults to stdout)")
 
     mapping_group = parser.add_mutually_exclusive_group(required=True)
     mapping_group.add_argument(
@@ -150,7 +150,6 @@ def main():
         help="CSV file with property mappings (spring_property,source) where source is a Maven property name or '=<literal>'"
     )
 
-    parser.add_argument("--output", metavar="FILE", help="Output file path (defaults to stdout)")
 
     args = parser.parse_args()
 
