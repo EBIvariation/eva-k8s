@@ -132,7 +132,7 @@ def main():
         "--maven_file", required=True, metavar="FILE", help="Path to Maven settings.xml file"
     )
     parser.add_argument(
-        "--profile", required=True, metavar="PROFILE", help="Maven profile ID (e.g. dev, prod)"
+        "--profile", required=True, metavar="PROFILE", help="Maven profile ID (e.g. development, production)"
     )
 
     mapping_group = parser.add_mutually_exclusive_group(required=True)
