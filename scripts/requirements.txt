@@ -1,2 +1,2 @@
 pyyaml
-eva-common-pyutils
+ebi-eva-common-pyutils
