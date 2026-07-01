@@ -3,11 +3,12 @@ kind: Deployment
 metadata:
   name: eva-seqcol
 spec:
-  replicas: 3  # Single replica for development
+  replicas: 3  # 1 replica per node across the 3-node staging cluster
   template:
     spec:
       containers:
       - name: eva-seqcol
+        image: dockerhub.ebi.ac.uk/ebivariation/eva-seqcol
         imagePullPolicy: Always
         resources:
           requests:
