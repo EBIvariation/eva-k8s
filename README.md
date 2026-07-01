@@ -22,13 +22,16 @@ eva-k8s/
             │   ├── deployment-patch.yaml
             │   ├── ingress-patch.yaml
             │   └── application.properties  # generated at deploy time — never committed
-            └── local/                # local development (minikube / kind)
+            ├── local/                # local development (minikube / kind)
+            │   ├── kustomization.yaml
+            │   ├── namespace.yaml
+            │   ├── deployment-patch.yaml
+            │   ├── service-patch.yaml
+            │   ├── postgres.yaml     # embedded PostgreSQL for local testing
+            │   └── application.properties  # generated at deploy time — never committed
+            └── staging/                # staging development (wwwdev.ebi.ac.uk)
                 ├── kustomization.yaml
-                ├── namespace.yaml
-                ├── deployment-patch.yaml
-                ├── service-patch.yaml
-                ├── postgres.yaml     # embedded PostgreSQL for local testing
-                └── application.properties  # generated at deploy time — never committed
+                ...
 ```
 
 Current services:
@@ -81,10 +84,11 @@ The image tag to deploy is set via the `images[].newTag` field in the overlay's 
 
 ### Environments
 
-| Overlay | Cluster host | Namespace pattern | Replicas |
-|---------|-------------|-------------------|----------|
-| `dev` | wwwint.ebi.ac.uk | `<service>-dev` | 1 |
-| `local` | localhost (minikube) | `<service>-local` | 1 + local DB |
+| Overlay   | Cluster host | Namespace pattern | Replicas         |
+|-----------|-------------|-------------------|-------------------|
+| `dev`     | wwwint.ebi.ac.uk | `<service>-dev`   | 1            |
+| `staging` | wwwint.ebi.ac.uk | `<service>-stage` | 3            |
+| `local`   | localhost (minikube) | `<service>-local` | 1 + local DB|
 
 Production overlays will be added when services are ready for production.
 

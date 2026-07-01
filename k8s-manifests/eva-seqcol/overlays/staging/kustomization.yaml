@@ -1,0 +1,16 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: eva-seqcol-stage
+resources:
+- namespace.yaml
+- ../../base
+patches:
+- path: deployment-patch.yaml
+- path: ingress-patch.yaml
+images:
+- name: dockerhub.ebi.ac.uk/ebivariation/eva-seqcol
+  newTag: dev-fb92f8fd
+secretGenerator:
+- name: eva-seqcol-config
+  files:
+  - application.properties

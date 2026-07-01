@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: eva-seqcol
 spec:
-  replicas: 1  # Single replica for development
+  replicas: 3  # 1 replica per node across the 3-node staging cluster
   template:
     spec:
       containers:

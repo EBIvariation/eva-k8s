@@ -12,6 +12,7 @@ spec:
         fsGroup: 0
       containers:
       - name: eva-seqcol
+        image: ebivariation/eva-seqcol
         imagePullPolicy: Never  # Use local image
         resources:
           requests:
