@@ -21,7 +21,7 @@ EVA_SEQCOL_MAPPING = {
     'spring.datasource.password':      'eva.evapro.password',
     'spring.jpa.hibernate.ddl-auto':   '=update',
     'controller.auth.admin.username':  'seqcol.admin-user',
-    'controller.auth.admin.password':  'seqcol.password',
+    'controller.auth.admin.password':  'seqcol.admin-password',
     'ftp.proxy.host':                  '=null',
     'ftp.proxy.port':                  '=0'
 }
