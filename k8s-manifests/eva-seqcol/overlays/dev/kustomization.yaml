@@ -8,7 +8,7 @@ patches:
 - path: deployment-patch.yaml
 - path: ingress-patch.yaml
 images:
-- name: ebivariation/eva-seqcol
+- name: dockerhub.ebi.ac.uk/ebivariation/eva-seqcol
   newTag: dev-fb92f8fd
 secretGenerator:
 - name: eva-seqcol-config
