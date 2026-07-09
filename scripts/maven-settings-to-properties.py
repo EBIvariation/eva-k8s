@@ -26,6 +26,18 @@ EVA_SEQCOL_MAPPING = {
     'ftp.proxy.port':                  '=0'
 }
 
+CONTIG_ALIAS_MAPPING = {
+    'spring.datasource.url':           'contig-alias.db-url',
+    'spring.datasource.username':      'contig-alias.db-username',
+    'spring.datasource.password':      'contig-alias.db-password',
+    'spring.jpa.hibernate.ddl-auto':   'contig-alias.ddl-behaviour',
+    'controller.auth.admin.username':  'contig-alias.admin-user',
+    'controller.auth.admin.password':  'contig-alias.admin-password',
+    'ftp.proxy.host':                  'ftp.proxy.host',
+    'ftp.proxy.port':                  'ftp.proxy.port',
+    'config.scaffolds.enabled':        'contig-alias.scaffolds-enabled',
+}
+
 EVA_ACCESSION_WS_MAPPING = {
     'spring.data.mongodb.uri':                   'mongodb://|eva.mongo.user|:|eva.mongo.passwd.url-encoded|@|eva.mongo.host|/admin',
     'spring.data.mongodb.database':              'eva.accession.mongo.database',
@@ -41,6 +53,7 @@ EVA_ACCESSION_WS_MAPPING = {
 
 PROPERTY_SETS = {
     'eva-seqcol': EVA_SEQCOL_MAPPING,
+    'contig-alias': CONTIG_ALIAS_MAPPING,
     'eva-accession-ws': EVA_ACCESSION_WS_MAPPING
 }
 

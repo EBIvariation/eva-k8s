@@ -1,0 +1,16 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: contig-alias-dev
+resources:
+- namespace.yaml
+- ../../base
+patches:
+- path: deployment-patch.yaml
+- path: ingress-patch.yaml
+images:
+- name: dockerhub.ebi.ac.uk/ebivariation/contig-alias
+  newTag: dev-placeholder   # Gitlab-CI overwrites this via scripts/update-image-tag.py on every deploy
+secretGenerator:
+- name: contig-alias-config
+  files:
+  - application.properties

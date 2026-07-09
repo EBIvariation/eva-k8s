@@ -1,0 +1,36 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: contig-alias-local
+
+resources:
+- namespace.yaml
+- postgres.yaml
+- ../../base
+
+# Patch the base deployment for local testing
+patches:
+- path: deployment-patch.yaml
+- path: service-patch.yaml
+# Skip ingress and base secrets for local testing
+- target:
+    group: networking.k8s.io
+    version: v1
+    kind: Ingress
+    name: contig-alias
+  patch: |
+    - op: replace
+      path: /spec/rules/0/host
+      value: localhost
+
+# Use local image
+images:
+- name: ebivariation/contig-alias
+  newName: contig-alias
+  newTag: local
+
+# Generate secret with application.properties for local testing
+secretGenerator:
+- name: contig-alias-config
+  files:
+  - application.properties

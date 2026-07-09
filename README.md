@@ -39,6 +39,7 @@ Current services:
 | Directory | Description                   |
 |-----------|-------------------------------|
 | [`k8s-manifests/eva-seqcol`](./k8s-manifests/eva-seqcol) | Sequence Collections REST API |
+| [`k8s-manifests/contig-alias`](./k8s-manifests/contig-alias) | Contig/chromosome alias resolution REST API |
 | [`k8s-manifests/eva-accession-ws`](./k8s-manifests/eva-accession-ws) | Variant Identifiers REST API  |
 
 ## How deployment works
@@ -88,7 +89,7 @@ The image tag to deploy is set via the `images[].newTag` field in the overlay's 
 | Overlay   | Cluster host | Namespace pattern | Replicas         |
 |-----------|-------------|-------------------|-------------------|
 | `dev`     | wwwint.ebi.ac.uk | `<service>-dev`   | 1            |
-| `staging` | wwwint.ebi.ac.uk | `<service>-stage` | 3            |
+| `staging` | wwwdev.ebi.ac.uk | `<service>-stage` | 3 (1 for contig-alias) |
 | `local`   | localhost (minikube) | `<service>-local` | 1 + local DB|
 
 Production overlays will be added when services are ready for production.
