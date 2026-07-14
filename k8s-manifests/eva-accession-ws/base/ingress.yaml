@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: eva-accession-ws
+  labels:
+    app: eva-accession-ws
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+spec:
+  rules:
+  - host: eva-accession-ws.example.com  # Replace with your actual hostname
+    http:
+      paths:
+      - path: /eva/webservices/identifiers
+        pathType: Prefix
+        backend:
+          service:
+            name: eva-accession-ws
+            port:
+              number: 8080

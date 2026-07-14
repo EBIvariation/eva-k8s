@@ -36,9 +36,10 @@ eva-k8s/
 
 Current services:
 
-| Directory | Description |
-|-----------|-------------|
+| Directory | Description                   |
+|-----------|-------------------------------|
 | [`k8s-manifests/eva-seqcol`](./k8s-manifests/eva-seqcol) | Sequence Collections REST API |
+| [`k8s-manifests/eva-accession-ws`](./k8s-manifests/eva-accession-ws) | Variant Identifier REST API   |
 
 ## How deployment works
 
