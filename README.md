@@ -39,7 +39,7 @@ Current services:
 | Directory | Description                   |
 |-----------|-------------------------------|
 | [`k8s-manifests/eva-seqcol`](./k8s-manifests/eva-seqcol) | Sequence Collections REST API |
-| [`k8s-manifests/eva-accession-ws`](./k8s-manifests/eva-accession-ws) | Variant Identifier REST API   |
+| [`k8s-manifests/eva-accession-ws`](./k8s-manifests/eva-accession-ws) | Variant Identifiers REST API  |
 
 ## How deployment works
 
