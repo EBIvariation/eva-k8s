@@ -3,4 +3,5 @@
 *.iml
 
 # Generated at deploy time from Maven settings.xml — never commit
-**/overlays/**/application.properties
+k8s-manifests/*/overlays/**/application.properties
+!k8s-manifests/*/overlays/local/application.properties

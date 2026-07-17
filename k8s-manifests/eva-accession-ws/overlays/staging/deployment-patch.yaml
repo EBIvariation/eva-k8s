@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eva-accession-ws
+spec:
+  replicas: 3  # 1 replica per node across the 3-node staging cluster
+  template:
+    spec:
+      containers:
+      - name: eva-accession-ws
+        image: dockerhub.ebi.ac.uk/ebivariation/eva-accession-ws
+        imagePullPolicy: Always
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"

@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
-
-import sys
 import argparse
 import csv
+import re
+import sys
 from pathlib import Path
 
-from lxml import etree as et
 from ebi_eva_internal_pyutils.config_utils import get_properties_from_xml_file
-
+from lxml import etree as et
 
 # Mapping format: { spring_property: source }
 # source is either a Maven property name to look up, or '=<literal>' for a hard-coded value.
 # Example: 'spring.jpa.hibernate.ddl-auto': '=update'
 
 LITERAL_PREFIX = '='
+TEMPLATE_PATTERN = re.compile(r'\|([^|]+)\|')
 
 EVA_SEQCOL_MAPPING = {
     'spring.datasource.url':           'eva.evapro.jdbc.url',
@@ -26,8 +26,22 @@ EVA_SEQCOL_MAPPING = {
     'ftp.proxy.port':                  '=0'
 }
 
+EVA_ACCESSION_WS_MAPPING = {
+    'spring.data.mongodb.uri':                   'mongodb://|eva.mongo.user|:|eva.mongo.passwd.url-encoded|@|eva.mongo.host|/admin',
+    'spring.data.mongodb.database':              'eva.accession.mongo.database',
+    'mongodb.read-preference':                   'eva.mongo.read-preference',
+    'human.mongodb.uri':                         'mongodb://|eva.mongo.user|:|eva.mongo.passwd.url-encoded|@|eva.mongo.host|/admin',
+    'human.mongodb.database':                    'eva.accession.mongo.human.database',
+    'continuous.id.blocks.datasource.jdbc-url':  'eva.accession.jdbc.url',
+    'continuous.id.blocks.datasource.username':  'eva.accession.user',
+    'continuous.id.blocks.datasource.password':  'eva.accession.password',
+    'contig-alias.url':                          'contig-alias.url',
+    'eva.api.base-url':                          'eva.api.base-url'
+}
+
 PROPERTY_SETS = {
     'eva-seqcol': EVA_SEQCOL_MAPPING,
+    'eva-accession-ws': EVA_ACCESSION_WS_MAPPING
 }
 
 
@@ -94,8 +108,9 @@ def convert_maven_to_properties(maven_file: str, profile: str, mapping: dict, ou
         return False
 
     missing_props = [
-        source for source in mapping.values()
-        if not source.startswith(LITERAL_PREFIX) and source not in maven_props
+        prop for source in mapping.values()
+        for prop in get_required_maven_props(source)
+        if prop not in maven_props
     ]
     if missing_props:
         for prop in missing_props:
@@ -104,10 +119,7 @@ def convert_maven_to_properties(maven_file: str, profile: str, mapping: dict, ou
 
     lines = []
     for spring_key, source in mapping.items():
-        if source.startswith(LITERAL_PREFIX):
-            value = source[len(LITERAL_PREFIX):]
-        else:
-            value = maven_props[source]
+        value = resolve_source_value(source, maven_props)
         lines.append(f"{spring_key}={value if value is not None else ''}")
 
     content = '\n'.join(lines) + '\n'
@@ -121,6 +133,27 @@ def convert_maven_to_properties(maven_file: str, profile: str, mapping: dict, ou
     except OSError as e:
         print(f"Error: Could not write to {output_path}: {e}")
         return False
+
+
+def get_required_maven_props(source: str) -> list:
+    if source.startswith(LITERAL_PREFIX):
+        return []
+    placeholders = TEMPLATE_PATTERN.findall(source)
+    return placeholders if placeholders else [source]
+
+
+def resolve_source_value(source: str, maven_props: dict):
+    if source.startswith(LITERAL_PREFIX):
+        return source[len(LITERAL_PREFIX):]
+
+    if TEMPLATE_PATTERN.search(source):
+        def _replace(match):
+            value = maven_props[match.group(1)]
+            return value if value is not None else ''
+
+        return TEMPLATE_PATTERN.sub(_replace, source)
+
+    return maven_props[source]
 
 
 def main():
