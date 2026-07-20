@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: contig-alias
+spec:
+  replicas: 1  # FIXME: Contig alias uses a job queue, not safe with >1 replica
+  template:
+    spec:
+      containers:
+      - name: contig-alias
+        image: dockerhub.ebi.ac.uk/ebivariation/contig-alias
+        imagePullPolicy: Always
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"

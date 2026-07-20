@@ -1,11 +1,11 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: eva-seqcol
+  name: contig-alias
   labels:
-    app: eva-seqcol
+    app: contig-alias
 spec:
-  replicas: 2
+  replicas: 1  # FIXME: Contig alias uses a job queue, not safe with >1 replica
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -13,11 +13,11 @@ spec:
       maxUnavailable: 0
   selector:
     matchLabels:
-      app: eva-seqcol
+      app: contig-alias
   template:
     metadata:
       labels:
-        app: eva-seqcol
+        app: contig-alias
     spec:
       securityContext:
         runAsNonRoot: true
@@ -28,20 +28,16 @@ spec:
       - name: regcred
 
       containers:
-      - name: eva-seqcol
+      - name: contig-alias
         imagePullPolicy: Always
         ports:
-        - containerPort: 8081
+        - containerPort: 8080
           protocol: TCP
 
         env:
         # JVM tuning for containers
         - name: JAVA_OPTS
           value: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+UseG1GC"
-
-        # Service info file path
-        - name: SERVICE_INFO_FILE_PATH
-          value: "/app/service-info.json"
 
         resources:
           requests:
@@ -53,8 +49,8 @@ spec:
 
         livenessProbe:
           httpGet:
-            path: /eva/webservices/seqcol/health
-            port: 8081
+            path: /eva/webservices/contig-alias/health
+            port: 8080
           initialDelaySeconds: 90
           periodSeconds: 30
           timeoutSeconds: 10
@@ -62,8 +58,8 @@ spec:
 
         readinessProbe:
           httpGet:
-            path: /eva/webservices/seqcol/health
-            port: 8081
+            path: /eva/webservices/contig-alias/health
+            port: 8080
           initialDelaySeconds: 60
           periodSeconds: 10
           timeoutSeconds: 5
@@ -81,13 +77,13 @@ spec:
         emptyDir: {}
       - name: config-volume
         secret:
-          secretName: eva-seqcol-config
+          secretName: contig-alias-config
           items:
           - key: application.properties
             path: application.properties
           defaultMode: 0444
 
-      # Spread pods across nodes for high availability
+      # Spread pods across nodes for high availability.
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
@@ -95,5 +91,5 @@ spec:
             podAffinityTerm:
               labelSelector:
                 matchLabels:
-                  app: eva-seqcol
+                  app: contig-alias
               topologyKey: kubernetes.io/hostname

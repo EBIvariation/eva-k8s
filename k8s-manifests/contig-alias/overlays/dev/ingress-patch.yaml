@@ -1,0 +1,16 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: contig-alias
+spec:
+  rules:
+  - host: wwwint.ebi.ac.uk
+    http:
+      paths:
+      - path: /eva/webservices/contig-alias
+        pathType: Prefix
+        backend:
+          service:
+            name: contig-alias
+            port:
+              number: 8080
