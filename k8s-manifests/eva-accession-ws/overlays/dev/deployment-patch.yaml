@@ -8,7 +8,7 @@ spec:
     spec:
       containers:
       - name: eva-accession-ws
-        image: dockerhub.ebi.ac.uk/ebivariation/eva-accession-ws
+        image: dockerhub.ebi.ac.uk/ebivariation/eva-accession
         imagePullPolicy: Always
         resources:
           requests:
