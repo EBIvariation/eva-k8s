@@ -17,8 +17,8 @@ TEMPLATE_PATTERN = re.compile(r'\|([^|]+)\|')
 
 EVA_SEQCOL_MAPPING = {
     'spring.datasource.url':           'eva.evapro.jdbc.url',
-    'spring.datasource.username':      'eva.evapro.user',
-    'spring.datasource.password':      'eva.evapro.password',
+    'spring.datasource.username':      'eva.evapro.k8s.user',
+    'spring.datasource.password':      'eva.evapro.k8s.password',
     'spring.jpa.hibernate.ddl-auto':   '=update',
     'controller.auth.admin.username':  'seqcol.admin-user',
     'controller.auth.admin.password':  'seqcol.admin-password',
@@ -28,8 +28,8 @@ EVA_SEQCOL_MAPPING = {
 
 CONTIG_ALIAS_MAPPING = {
     'spring.datasource.url':           'contig-alias.db-url',
-    'spring.datasource.username':      'contig-alias.db-username',
-    'spring.datasource.password':      'contig-alias.db-password',
+    'spring.datasource.username':      'contig-alias.k8s.db-user',
+    'spring.datasource.password':      'contig-alias.k8s.db-password',
     'spring.jpa.hibernate.ddl-auto':   'contig-alias.ddl-behaviour',
     'controller.auth.admin.username':  'contig-alias.admin-user',
     'controller.auth.admin.password':  'contig-alias.admin-password',
@@ -39,10 +39,10 @@ CONTIG_ALIAS_MAPPING = {
 }
 
 EVA_ACCESSION_WS_MAPPING = {
-    'spring.data.mongodb.uri':                   'mongodb://|eva.mongo.user|:|eva.mongo.passwd.url-encoded|@|eva.mongo.host|/admin',
+    'spring.data.mongodb.uri':                   'mongodb://|eva.mongo.k8s.user|:|eva.mongo.k8s.password.url-encoded|@|eva.mongo.host|/admin',
     'spring.data.mongodb.database':              'eva.accession.mongo.database',
     'mongodb.read-preference':                   'eva.mongo.read-preference',
-    'human.mongodb.uri':                         'mongodb://|eva.mongo.user|:|eva.mongo.passwd.url-encoded|@|eva.mongo.host|/admin',
+    'human.mongodb.uri':                         'mongodb://|eva.mongo.k8s.user|:|eva.mongo.k8s.password.url-encoded|@|eva.mongo.host|/admin',
     'human.mongodb.database':                    'eva.accession.mongo.human.database',
     'continuous.id.blocks.datasource.jdbc-url':  'eva.accession.jdbc.url',
     'continuous.id.blocks.datasource.username':  'eva.accession.user',
