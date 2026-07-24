@@ -9,7 +9,7 @@ patches:
 - path: ingress-patch.yaml
 images:
 - name: dockerhub.ebi.ac.uk/ebivariation/contig-alias
-  newTag: dev-a86ed3db
+  newTag: dev-d8d6e312
 secretGenerator:
 - name: contig-alias-config
   files:
