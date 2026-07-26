@@ -1,0 +1,52 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: oracle
+spec:
+  ports:
+  - port: 1521
+    targetPort: 1521
+  selector:
+    app: oracle
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oracle
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: oracle
+  template:
+    metadata:
+      labels:
+        app: oracle
+    spec:
+      containers:
+      - name: oracle
+        image: gvenzl/oracle-free:slim
+        ports:
+        - containerPort: 1521
+        env:
+        - name: ORACLE_PASSWORD
+          value: oracle_pass
+        - name: APP_USER
+          value: oracle_user
+        - name: APP_USER_PASSWORD
+          value: oracle_pass
+        - name: ORACLE_DATABASE
+          value: oracle_db
+        resources:
+          requests:
+            memory: "1.5Gi"
+            cpu: "500m"
+          limits:
+            memory: "2.5Gi"
+            cpu: "1500m"
+        readinessProbe:
+          exec:
+            command: ["healthcheck.sh"]
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          failureThreshold: 5

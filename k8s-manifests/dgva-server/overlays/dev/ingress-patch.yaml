@@ -1,0 +1,16 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dgva-server
+spec:
+  rules:
+  - host: wwwint.ebi.ac.uk
+    http:
+      paths:
+      - path: /dgva
+        pathType: Prefix
+        backend:
+          service:
+            name: dgva-server
+            port:
+              number: 8080
