@@ -1,0 +1,16 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: eva-server
+spec:
+  rules:
+  - host: wwwint.ebi.ac.uk
+    http:
+      paths:
+      - path: /eva
+        pathType: Prefix
+        backend:
+          service:
+            name: eva-server
+            port:
+              number: 8080
