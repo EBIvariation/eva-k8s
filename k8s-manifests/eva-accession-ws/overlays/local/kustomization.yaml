@@ -5,7 +5,6 @@ namespace: eva-accession-ws-local
 
 resources:
 - namespace.yaml
-- postgres.yaml
 - mongodb.yaml
 - ../../base
 
