@@ -1,0 +1,16 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: eva-release
+spec:
+  rules:
+  - host: wwwdev.ebi.ac.uk
+    http:
+      paths:
+      - path: /eva/webservices/eva-release
+        pathType: Prefix
+        backend:
+          service:
+            name: eva-release
+            port:
+              number: 8080

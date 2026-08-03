@@ -51,10 +51,51 @@ EVA_ACCESSION_WS_MAPPING = {
     'eva.api.base-url':                          'eva.api.base-url'
 }
 
+COUNT_STATS = {
+    'spring.datasource.url':            'eva.evapro.jdbc.url',
+    'spring.datasource.username':       'eva.evapro.user',
+    'spring.datasource.password':       'eva.evapro.password',
+    'controller.auth.admin.username':   'eva.count-stats.username',
+    'controller.auth.admin.password':   'eva.count-stats.password'
+}
+
+EVA_RELEASE = {
+    'spring.datasource.url':            '|eva.evapro.jdbc.url|?currentSchema=|eva.evapro.eva-stats.schema|',
+    'spring.datasource.username':       'eva.evapro.user',
+    'spring.datasource.password':       'eva.evapro.password'
+}
+
+DGVA_SERVER = {
+    'spring.datasource.url':            'dgvapro.host',
+    'spring.datasource.username':       'dgvapro.user',
+    'spring.datasource.password':       'dgvapro.passwd'
+}
+
+EVA_SERVER = {
+    'spring.datasource.url':                            'eva.evapro.jdbc.url',
+    'spring.datasource.username':                       'eva.evapro.user',
+    'spring.datasource.password':                       'eva.evapro.password',
+    'spring.data.mongodb.host':                         'eva.mongo.host',
+    'spring.data.mongodb.authentication-database':      'eva.mongo.auth.db',
+    'spring.data.mongodb.username':                     'eva.mongo.user',
+    'spring.data.mongodb.password':                     'eva.mongo.passwd',
+    'spring.data.mongodb.read-preference':              'eva.mongo.read-preference',
+    'db.collection-names.files':                        'eva.mongo.collections.files',
+    'db.collection-names.variants':                     'eva.mongo.collections.variants',
+    'db.collection-names.annotation-metadata':          'eva.mongo.collections.annotation-metadata',
+    'db.collection-names.features':                     'eva.mongo.collections.features',
+    'db.collection-names.annotations':                  'eva.mongo.collections.annotations',
+    'contig-alias.url':                                 'contig-alias.url'
+}
+
 PROPERTY_SETS = {
     'eva-seqcol': EVA_SEQCOL_MAPPING,
     'contig-alias': CONTIG_ALIAS_MAPPING,
-    'eva-accession-ws': EVA_ACCESSION_WS_MAPPING
+    'eva-accession-ws': EVA_ACCESSION_WS_MAPPING,
+    'eva-server': EVA_SERVER,
+    'dgva-server': DGVA_SERVER,
+    'eva-release': EVA_RELEASE,
+    'count-stats': COUNT_STATS
 }
 
 

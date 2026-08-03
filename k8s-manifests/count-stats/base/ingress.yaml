@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: count-stats
+  labels:
+    app: count-stats
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+spec:
+  rules:
+  - host: count-stats.example.com  # Replace with your actual hostname
+    http:
+      paths:
+      - path: /eva/webservices/count-stats
+        pathType: Prefix
+        backend:
+          service:
+            name: count-stats
+            port:
+              number: 8080
