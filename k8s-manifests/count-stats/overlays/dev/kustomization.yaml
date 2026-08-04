@@ -9,7 +9,7 @@ patches:
 - path: ingress-patch.yaml
 images:
 - name: dockerhub.ebi.ac.uk/ebivariation/eva-ws
-  newTag: count-stat-dev-e684d61b
+  newTag: count-stat-dev-f716aecb
 secretGenerator:
 - name: count-stats-config
   files:
