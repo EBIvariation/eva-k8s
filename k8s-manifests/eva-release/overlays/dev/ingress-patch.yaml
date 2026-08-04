@@ -7,7 +7,7 @@ spec:
   - host: wwwint.ebi.ac.uk
     http:
       paths:
-      - path: /eva/webservices/eva-release
+      - path: /eva/webservices/release
         pathType: Prefix
         backend:
           service:
