@@ -44,9 +44,6 @@ EVA_ACCESSION_WS_MAPPING = {
     'mongodb.read-preference':                   'eva.mongo.read-preference',
     'human.mongodb.uri':                         'mongodb://|eva.mongo.k8s.user|:|eva.mongo.k8s.password.url-encoded|@|eva.mongo.host|/admin',
     'human.mongodb.database':                    'eva.accession.mongo.human.database',
-    'continuous.id.blocks.datasource.jdbc-url':  'eva.accession.jdbc.url',
-    'continuous.id.blocks.datasource.username':  'eva.accession.user',
-    'continuous.id.blocks.datasource.password':  'eva.accession.password',
     'contig-alias.url':                          'contig-alias.url',
     'eva.api.base-url':                          'eva.api.base-url'
 }
