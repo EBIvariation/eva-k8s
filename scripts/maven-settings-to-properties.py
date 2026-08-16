@@ -85,6 +85,32 @@ EVA_SERVER = {
     'contig-alias.url':                                 'contig-alias.url'
 }
 
+EVA_SUBMISSION_WS_MAPPING = {
+    'controller.auth.admin.username':         'submission-ws.admin-user',
+    'controller.auth.admin.password':         'submission-ws.admin-password',
+    'spring.datasource.url':                  'eva.evapro.jdbc.url',
+    'spring.datasource.username':             'eva.evapro.user',
+    'spring.datasource.password':             'eva.evapro.password',
+    'globus.clientId':                        'globus.client-id',
+    'globus.clientSecret':                    'globus.client-secret',
+    'globus.refreshToken':                    'globus.refresh-token',
+    'globus.uploadHttpDomain':                'globus.upload-http-domain',
+    'globus.submission.endpointId':           'globus.submission-endpoint-id',
+    'globus.token.endpoint':                  'globus.token-endpoint',
+    'globus.transfer.base.url':               'globus.transfer-base-url',
+    'eva.helpdesk.email':                     'eva.helpdesk-email',
+    'eva.consent.statement':                  'eva.consent-statement',
+    'eva.email.server':                       'eva.email-server',
+    'eva.email.port':                         'eva.email-port',
+    'lsri.clientId':                          'lsri.client-id',
+    'lsri.clientSecret':                      'lsri.client-secret',
+    'lsri.userinfo.url':                      'lsri.userinfo-url',
+    'lsri.token.url':                         'lsri.token-url',
+    'webin.userinfo.url':                     'webin.userinfo-url',
+    'callhome.schema.url':                    'callhome.schema-url',
+    'eva.submission.account':                 'eva.submission.account'
+}
+
 PROPERTY_SETS = {
     'eva-seqcol': EVA_SEQCOL_MAPPING,
     'contig-alias': CONTIG_ALIAS_MAPPING,
@@ -92,7 +118,8 @@ PROPERTY_SETS = {
     'eva-server': EVA_SERVER,
     'dgva-server': DGVA_SERVER,
     'eva-release': EVA_RELEASE,
-    'count-stats': COUNT_STATS
+    'count-stats': COUNT_STATS,
+    'eva-submission-ws': EVA_SUBMISSION_WS_MAPPING
 }
 
 
