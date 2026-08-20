@@ -102,10 +102,6 @@ EVA_SUBMISSION_WS_MAPPING = {
     'eva.consent.statement':                  'eva.consent-statement',
     'eva.email.server':                       'eva.email-server',
     'eva.email.port':                         'eva.email-port',
-    'lsri.clientId':                          'lsri.client-id',
-    'lsri.clientSecret':                      'lsri.client-secret',
-    'lsri.userinfo.url':                      'lsri.userinfo-url',
-    'lsri.token.url':                         'lsri.token-url',
     'webin.userinfo.url':                     'webin.userinfo-url',
     'callhome.schema.url':                    'callhome.schema-url',
     'eva.submission.account':                 'eva.submission.account'
