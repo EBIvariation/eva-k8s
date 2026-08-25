@@ -9,4 +9,4 @@ patches:
 - path: ingress-patch.yaml
 images:
 - name: dockerhub.ebi.ac.uk/ebivariation/eva-web
-  newTag: dev-latest
+  newTag: dev-1e67e258
