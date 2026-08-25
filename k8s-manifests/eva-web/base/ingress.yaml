@@ -11,7 +11,7 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
 spec:
   rules:
-  - host: eva-accession-ws.example.com  # Replace with your actual hostname
+  - host: eva-web.example.com  # Replace with your actual hostname
     http:
       paths:
       - path: /
