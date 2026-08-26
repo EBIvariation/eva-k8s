@@ -7,7 +7,7 @@ spec:
   - host: wwwint.ebi.ac.uk
     http:
       paths:
-      - path: /dgva
+      - path: /dgva/webservices/rest
         pathType: Prefix
         backend:
           service:

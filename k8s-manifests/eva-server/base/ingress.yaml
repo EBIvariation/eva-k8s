@@ -14,7 +14,7 @@ spec:
   - host: eva-server.example.com  # Replace with your actual hostname
     http:
       paths:
-      - path: /eva
+      - path: /eva/webservices/rest
         pathType: Prefix
         backend:
           service:
