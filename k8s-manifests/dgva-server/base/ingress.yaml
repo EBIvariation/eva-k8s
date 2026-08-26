@@ -14,7 +14,7 @@ spec:
   - host: dgva-server.example.com  # Replace with your actual hostname
     http:
       paths:
-      - path: /dgva
+      - path: /dgva/webservices/rest
         pathType: Prefix
         backend:
           service:
