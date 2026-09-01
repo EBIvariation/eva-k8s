@@ -6,7 +6,12 @@ resources:
 - ../../base
 patches:
 - path: deployment-patch.yaml
-- path: ingress-patch.yaml
+- target:
+    group: networking.k8s.io
+    version: v1
+    kind: Ingress
+    name: eva-web
+  path: ingress-patch.yaml
 images:
 - name: dockerhub.ebi.ac.uk/ebivariation/eva-web
   newTag: dev-1e67e258
