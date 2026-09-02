@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eva-web
+spec:
+  replicas: 1  # Single replica for local testing
+  template:
+    spec:
+      containers:
+      - name: eva-web
+        image: dockerhub.ebi.ac.uk/ebivariation/eva-web
+        imagePullPolicy: Never  # Use the image built locally, don't try to pull it
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        # readiness/liveness probe delays from base are tuned for a shared
+        # cluster; a local single-replica pod can afford to come up faster
+        readinessProbe:
+          initialDelaySeconds: 10
+        livenessProbe:
+          initialDelaySeconds: 15

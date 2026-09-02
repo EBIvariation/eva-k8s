@@ -1,0 +1,15 @@
+# JSON6902 patch (paired with the `target:` selector in kustomization.yaml).
+- op: replace
+  path: /spec/type
+  value: LoadBalancer
+- op: replace
+  path: /spec/ports
+  value:
+  - name: http
+    # 8080 is used as the k3s ServiceLB hostPort for other services' local
+    # overlays - use a distinct port here so multiple local overlays can run
+    # side by side without a scheduling conflict.
+    # The container itself still listens on 8080 (targetPort).
+    port: 8090
+    targetPort: 8080
+    protocol: TCP
