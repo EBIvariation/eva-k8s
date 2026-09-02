@@ -33,8 +33,11 @@ CONTIG_ALIAS_MAPPING = {
     'spring.jpa.hibernate.ddl-auto':   'contig-alias.ddl-behaviour',
     'controller.auth.admin.username':  'contig-alias.admin-user',
     'controller.auth.admin.password':  'contig-alias.admin-password',
-    'ftp.proxy.host':                  'ftp.proxy.host',
-    'ftp.proxy.port':                  'ftp.proxy.port',
+    # Spring-side key is 'http.proxy.*' (no longer FTP-specific - see contig-alias's HTTPS
+    # rewrite of NCBIBrowser/ENABrowser); kept mapped from the existing 'ftp.proxy.*' Maven
+    # property so the settings.xml itself doesn't need to be touched.
+    'http.proxy.host':                 'ftp.proxy.host',
+    'http.proxy.port':                 'ftp.proxy.port',
     'config.scaffolds.enabled':        'contig-alias.scaffolds-enabled',
 }
 
