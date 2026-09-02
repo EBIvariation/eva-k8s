@@ -10,6 +10,13 @@ spec:
       - name: contig-alias
         image: dockerhub.ebi.ac.uk/ebivariation/contig-alias
         imagePullPolicy: Always
+        env:
+        # Outbound HTTP(S) proxy for reaching internet.
+        - name: JAVA_TOOL_OPTIONS
+          value: >-
+            -Dhttp.proxyHost=hh-wwwcache.ebi.ac.uk -Dhttp.proxyPort=3128
+            -Dhttps.proxyHost=hh-wwwcache.ebi.ac.uk -Dhttps.proxyPort=3128
+            -Dhttp.nonProxyHosts=localhost|127.*|*.cluster.local
         resources:
           requests:
             memory: "512Mi"
