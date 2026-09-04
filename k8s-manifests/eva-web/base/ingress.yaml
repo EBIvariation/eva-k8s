@@ -9,13 +9,16 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-body-size: "50m"
     nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    # eva-web is served under an /eva prefix. This strips the prefix before the request reaches the container
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
 spec:
   rules:
   - host: eva-web.example.com  # Replace with your actual hostname
     http:
       paths:
-      - path: /
-        pathType: Prefix
+      - path: /eva(/|$)(.*)
+        pathType: ImplementationSpecific
         backend:
           service:
             name: eva-web

@@ -1,0 +1,7 @@
+- op: replace
+  path: /spec/rules/0/host
+  value: localhost
+# backend port differs from base's 8080 - see service-patch.yaml for why.
+- op: replace
+  path: /spec/rules/0/http/paths/0/backend/service/port/number
+  value: 8090
