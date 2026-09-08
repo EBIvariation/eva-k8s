@@ -1,0 +1,31 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: eva-web-local
+
+resources:
+- namespace.yaml
+- ../../base
+
+# Patch the base deployment/service for local testing
+patches:
+- path: deployment-patch.yaml
+# Use a JSON6902 replace to swap in the LoadBalancer port/type.
+- target:
+    version: v1
+    kind: Service
+    name: eva-web
+  path: service-patch.yaml
+# Requires ingress-nginx installed locally see the comment at the top of ingress-patch.yaml.
+- target:
+    group: networking.k8s.io
+    version: v1
+    kind: Ingress
+    name: eva-web
+  path: ingress-patch.yaml
+
+# Use the image built locally (see README) instead of the registry image
+images:
+- name: dockerhub.ebi.ac.uk/ebivariation/eva-web
+  newName: eva-web
+  newTag: local

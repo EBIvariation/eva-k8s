@@ -1,0 +1,11 @@
+# JSON6902 patch.
+- op: replace
+  path: /spec/type
+  value: LoadBalancer
+- op: replace
+  path: /spec/ports
+  value:
+  - name: http
+    port: 8090
+    targetPort: 8080
+    protocol: TCP

@@ -41,6 +41,7 @@ Current services:
 | [`k8s-manifests/eva-seqcol`](./k8s-manifests/eva-seqcol) | Sequence Collections REST API |
 | [`k8s-manifests/contig-alias`](./k8s-manifests/contig-alias) | Contig/chromosome alias resolution REST API |
 | [`k8s-manifests/eva-accession-ws`](./k8s-manifests/eva-accession-ws) | Variant Identifiers REST API  |
+| [`k8s-manifests/eva-web`](./k8s-manifests/eva-web) | Static frontend (nginx), served behind an `/eva` ingress path in dev/staging |
 
 ## How deployment works
 
@@ -135,6 +136,62 @@ kubectl apply -k k8s-manifests/eva-seqcol/overlays/local
 
 # Access the service
 kubectl port-forward -n eva-seqcol-local svc/eva-seqcol 8081:8081
+```
+
+### eva-web 
+
+`eva-web` has no `application.properties`/database because its config is baked into the
+build at image build time. To test it against a local cluster:
+
+```bash
+# Build the image locally, tagged to match overlays/local/kustomization.yaml
+cd /path/to/eva-web && docker build --build-arg ENVIRONMENT_NAME=dev -t eva-web:local .
+
+# Apply the local overlay
+kubectl apply -k k8s-manifests/eva-web/overlays/local
+
+# The overlay exposes eva-web as a LoadBalancer Service find it with:
+kubectl get svc -n eva-web-local eva-web
+
+# then browse http://<EXTERNAL-IP>:8090/, or simply:
+kubectl port-forward -n eva-web-local svc/eva-web 8090:8090
+```
+
+That gives a quick test at the site root, but it bypasses the fact that eva-web serves 
+on `/` rather than `/eva` so the site only resolve correctly if that prefix is stripped 
+before reaching the container.
+
+Note for Macs: Rancher Desktop ships Traefik by default, which ignores the rewrite 
+from `/eva` to `/` so we need to install ingress-nginx :
+
+```bash
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+helm install ingress-nginx ingress-nginx/ingress-nginx \
+  --namespace ingress-nginx --create-namespace \
+  --set controller.service.ports.http=18080 \
+  --set controller.service.ports.https=18443
+  # custom ports avoid colliding with Traefik's own LoadBalancer on 80/443
+```
+
+`overlays/local/ingress-patch.yaml` mirrors dev/staging's `/eva` path +
+`rewrite-target` exactly (just with no fixed host, so it's directly
+browsable). Once ingress-nginx is up:
+
+```bash
+kubectl apply -k k8s-manifests/eva-web/overlays/local
+
+# Forward the nginx Service's port 18080 to localhost:28080
+kubectl port-forward -n ingress-nginx svc/ingress-nginx-controller 28080:18080
+# Recommended: use localhost instead of nginx external IP. 
+# The Service's external IP is reachable directly from
+# the host in the common case, but the VPN client intercepts browser 
+# traffic and only localhost is guaranteed to bypass it
+
+# browse http://localhost:28080/eva/
+
+# Alternative, if the VPN is not on: browse the Service's own external IP
+kubectl get svc -n ingress-nginx ingress-nginx-controller   # find the external IP
+# then browse http://<EXTERNAL-IP>:18080/eva/
 ```
 
 ## Manifest validation
