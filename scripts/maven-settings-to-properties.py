@@ -33,7 +33,9 @@ CONTIG_ALIAS_MAPPING = {
     'spring.jpa.hibernate.ddl-auto':   'contig-alias.ddl-behaviour',
     'controller.auth.admin.username':  'contig-alias.admin-user',
     'controller.auth.admin.password':  'contig-alias.admin-password',
-    'config.scaffolds.enabled':        'contig-alias.scaffolds-enabled'
+    'config.scaffolds.enabled':        'contig-alias.scaffolds-enabled',
+    'ftp.proxy.host':                  '=null',
+    'ftp.proxy.port':                  '=0'
 }
 
 EVA_ACCESSION_WS_MAPPING = {
