@@ -153,16 +153,17 @@ kubectl apply -k k8s-manifests/eva-web/overlays/local
 # The overlay exposes eva-web as a LoadBalancer Service find it with:
 kubectl get svc -n eva-web-local eva-web
 
-# then browse http://<EXTERNAL-IP>:8090/, or simply:
+# then browse http://<EXTERNAL-IP>:8090/eva/, or simply:
 kubectl port-forward -n eva-web-local svc/eva-web 8090:8090
 ```
 
-That gives a quick test at the site root, but it bypasses the fact that eva-web serves 
-on `/` rather than `/eva` so the site only resolve correctly if that prefix is stripped 
-before reaching the container.
+eva-web serves its own `/eva` prefix directly (its Dockerfile copies the build into
+`eva/` and nginx.conf falls back to `eva/index.html`), 
+so this already works end-to-end, even hitting the Service directly, no ingress rewrite
+needed.
 
-Note for Macs: Rancher Desktop ships Traefik by default, which ignores the rewrite 
-from `/eva` to `/` so we need to install ingress-nginx :
+Note for Macs: Rancher Desktop ships Traefik by default, which doesn't support the
+`nginx.ingress.kubernetes.io/*` annotations, so we need to install ingress-nginx :
 
 ```bash
 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
@@ -173,9 +174,7 @@ helm install ingress-nginx ingress-nginx/ingress-nginx \
   # custom ports avoid colliding with Traefik's own LoadBalancer on 80/443
 ```
 
-`overlays/local/ingress-patch.yaml` mirrors dev/staging's `/eva` path +
-`rewrite-target` exactly (just with no fixed host, so it's directly
-browsable). Once ingress-nginx is up:
+Once ingress-nginx is up:
 
 ```bash
 kubectl apply -k k8s-manifests/eva-web/overlays/local
