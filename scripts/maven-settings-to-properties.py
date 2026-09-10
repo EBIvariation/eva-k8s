@@ -16,14 +16,14 @@ LITERAL_PREFIX = '='
 TEMPLATE_PATTERN = re.compile(r'\|([^|]+)\|')
 
 EVA_SEQCOL_MAPPING = {
-    'spring.datasource.url':           'eva.evapro.jdbc.url',
-    'spring.datasource.username':      'eva.evapro.k8s.user',
-    'spring.datasource.password':      'eva.evapro.k8s.password',
+    'spring.datasource.url':           'contig-alias.db-url',
+    'spring.datasource.username':      'contig-alias.k8s.db-user',
+    'spring.datasource.password':      'contig-alias.k8s.db-password',
     'spring.jpa.hibernate.ddl-auto':   '=update',
     'controller.auth.admin.username':  'seqcol.admin-user',
     'controller.auth.admin.password':  'seqcol.admin-password',
-    'ftp.proxy.host':                  '=hh-wwwcache.ebi.ac.uk',
-    'ftp.proxy.port':                  '=3128'
+    'ftp.proxy.host':                  '=null',
+    'ftp.proxy.port':                  '=0'
 }
 
 CONTIG_ALIAS_MAPPING = {
