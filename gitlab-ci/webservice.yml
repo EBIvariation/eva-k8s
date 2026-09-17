@@ -2,9 +2,8 @@
 #
 # Consuming repos should:
 #   include:
-#     - remote: 'https://raw.githubusercontent.com/EBIvariation/eva-k8s/refs/tags/<pinned tag, e.g. ci-v1>/gitlab-ci/webservice.yml'
-#       # bump the tag in this URL deliberately to adopt a template update - it's the only pin,
-#       # there's no separate ref field for `include: remote:`. Never point it at a branch.
+#     - remote: 'https://raw.githubusercontent.com/EBIvariation/eva-k8s/refs/tags/<pinned tag, e.g. v1.0>/gitlab-ci/webservice.yml'
+#       # bump the tag in this URL deliberately to adopt a template update
 #
 # and then declare their own jobs extending .build_docker / .update_and_deploy, e.g.:
 #
@@ -23,8 +22,7 @@ variables:
 .build_docker:
   stage: build
   image: docker:latest
-  # Serialise builds of the same service+commit (e.g. a dev build and a prod release build
-  # racing each other) so the pull-then-build promotion below can't have both jobs miss the
+  # Serialise builds of the same service+commit so the pull-then-build promotion below can't have both jobs miss the
   # pull and rebuild independently.
   resource_group: build-${SERVICE_NAME}-${CI_COMMIT_SHORT_SHA}
   services:
@@ -43,8 +41,6 @@ variables:
     # environment's pipeline: promote it instead of rebuilding. The tag is scoped by SERVICE_NAME because
     # some repos push several services to the same IMAGE_REPOSITORY
     # For example, eva-ws's eva-server/eva-release/count-stats/dgva-server all share ebivariation/eva-ws)
-    # IMAGE_TAG set by each job must stay service-prefixed for the same reason, wherever
-    # IMAGE_REPOSITORY is shared across services.
     - |
       CANONICAL_TAG="${SERVICE_NAME}-${CI_COMMIT_SHORT_SHA}"
       if docker pull "$IMAGE_REPOSITORY:$CANONICAL_TAG"; then
