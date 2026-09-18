@@ -1,6 +1,6 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-namespace: eva-seqcol-prod
+namespace: eva-accession-ws-prod
 resources:
 - namespace.yaml
 - ../../base
@@ -8,9 +8,9 @@ patches:
 - path: deployment-patch.yaml
 - path: ingress-patch.yaml
 images:
-- name: dockerhub.ebi.ac.uk/ebivariation/eva-seqcol
+- name: dockerhub.ebi.ac.uk/ebivariation/eva-accession
   newTag: not-set  # placeholder - overwritten by CI before every real deploy; deliberately invalid so an accidental deploy before that fails loudly (ImagePullBackOff) instead of silently running an old dev/staging image.
 secretGenerator:
-- name: eva-seqcol-config
+- name: eva-accession-ws-config
   files:
   - application.properties

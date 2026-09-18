@@ -29,7 +29,10 @@ eva-k8s/
             │   ├── service-patch.yaml
             │   ├── postgres.yaml     # embedded PostgreSQL for local testing
             │   └── application.properties  # generated at deploy time — never committed
-            └── staging/                # staging development (wwwdev.ebi.ac.uk)
+            ├── staging/                # staging environment (wwwdev.ebi.ac.uk)
+            │   ├── kustomization.yaml
+            │   ...
+            └── prod/                  # production environment (www.ebi.ac.uk), deployed on git tags
                 ├── kustomization.yaml
                 ...
 ```
@@ -91,9 +94,9 @@ The image tag to deploy is set via the `images[].newTag` field in the overlay's 
 |-----------|-------------|-------------------|-------------------|
 | `dev`     | wwwint.ebi.ac.uk | `<service>-dev`   | 1            |
 | `staging` | wwwdev.ebi.ac.uk | `<service>-stage` | 3 (1 for contig-alias) |
+| `prod`    | www.ebi.ac.uk | `<service>-prod`  | 3            | 
 | `local`   | localhost (minikube) | `<service>-local` | 1 + local DB|
 
-Production overlays will be added when services are ready for production.
 
 ## Prerequisites
 
