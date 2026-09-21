@@ -9,7 +9,7 @@ patches:
 - path: ingress-patch.yaml
 images:
 - name: dockerhub.ebi.ac.uk/ebivariation/eva-ws
-  newTag: not-set  # placeholder - overwritten by CI before every real deploy; deliberately invalid so an accidental deploy before that fails loudly (ImagePullBackOff) instead of silently running an old dev/staging image.
+  newTag: eva-server-v2.0.0
 secretGenerator:
 - name: eva-server-config
   files:
