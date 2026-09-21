@@ -1,0 +1,17 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: eva-web-prod
+resources:
+- namespace.yaml
+- ../../base
+patches:
+- path: deployment-patch.yaml
+- target:
+    group: networking.k8s.io
+    version: v1
+    kind: Ingress
+    name: eva-web
+  path: ingress-patch.yaml
+images:
+- name: dockerhub.ebi.ac.uk/ebivariation/eva-web
+  newTag: latest
