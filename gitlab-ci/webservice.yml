@@ -75,8 +75,9 @@ variables:
     - curl -u $GITHUB_USER:$GITHUB_TOKEN -H "Accept:application/vnd.github.raw" $KUBECONFIG_FILE > ~/.kube/config
     - chmod 600 ~/.kube/config
   script:
-    # Create the target namespace if it doesn't already exist (always run - idempotent)
-    - kubectl apply -f $K8S_MANIFEST_PATH/namespace.yaml
+    # Create the target namespace if it doesn't already exist (always run - idempotent).
+    # namespace.yaml lives in base not in the overlay.
+    - kubectl apply -f $K8S_MANIFEST_PATH/../../base/namespace.yaml
     # Create/update the image pull secret in the target namespace from DOCKER_AUTH_CONFIG. It only
     # updates if DOCKER_AUTH_CONFIG changes
     # SERVICE_NAME is used as the namespace which mean it will be the same for all clusters (dev/staging/prod)
