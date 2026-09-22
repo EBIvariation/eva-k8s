@@ -1,10 +1,9 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-namespace: count-stats-local
+namespace: count-stats
 
 resources:
-- namespace.yaml
 - postgres.yaml
 - ../../base
 
