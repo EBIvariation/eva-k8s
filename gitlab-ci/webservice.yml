@@ -18,6 +18,7 @@ variables:
   KUBECONFIG_FILE_DEV: https://api.github.com/repos/EBIvariation/configuration/contents/kubernetes-clusters/development-k8s-team-admin-conf.conf
   KUBECONFIG_FILE_STAGING: https://api.github.com/repos/EBIvariation/configuration/contents/kubernetes-clusters/staging-k8s-team-admin-conf.conf
   KUBECONFIG_FILE_PROD: https://api.github.com/repos/EBIvariation/configuration/contents/kubernetes-clusters/production-k8s-team-admin-conf.conf
+  KUBECONFIG_FILE_PROD_FALLBACK: https://api.github.com/repos/EBIvariation/configuration/contents/kubernetes-clusters/production-fallback-k8s-team-admin-conf.conf
 
 .build_docker:
   stage: build
