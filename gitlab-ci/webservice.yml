@@ -89,6 +89,7 @@ variables:
     # push just means someone else landed first, so re-fetch main and redo the tag
     # bump.
     - |
+      ENV_NAME="$(basename "$K8S_MANIFEST_PATH")"
       MAX_ATTEMPTS=5
       attempt=1
       while true; do
@@ -98,7 +99,7 @@ variables:
           echo "No image tag change to commit"
           break
         fi
-        git commit -m "Update $SERVICE_NAME ${ENV} image tag to ${IMAGE_TAG}"
+        git commit -m "Update $SERVICE_NAME ${ENV_NAME} image tag to ${IMAGE_TAG}"
         if git push origin main; then
           echo "Pushed image tag update on attempt $attempt"
           break
