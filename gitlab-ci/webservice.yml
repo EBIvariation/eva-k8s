@@ -84,15 +84,35 @@ variables:
     - curl -u $GITHUB_USER:$GITHUB_TOKEN -H "Accept:application/vnd.github.raw" "https://api.github.com/repos/EBIvariation/configuration/contents/eva-maven-settings.xml" > maven-settings.xml
     # Convert Maven settings to application.properties
     - python scripts/maven-settings-to-properties.py --maven_file maven-settings.xml --property_set "${PROPERTY_SET:-$SERVICE_NAME}" --profile $MAVEN_PROFILE --output application.properties
-    # Update image tag in kustomization
-    - python scripts/update-image-tag.py "$K8S_MANIFEST_PATH/kustomization.yaml" "${IMAGE_TAG}"
-    - git add "$K8S_MANIFEST_PATH/kustomization.yaml"
-    # Only commit if the image tag has changed
+    # Update image tag in kustomization, commit, and push with a fetch+retry loop.
+    # Concurrent deploy jobs can push to eva-k8s:main at the same time; a rejected
+    # push just means someone else landed first, so re-fetch main and redo the tag
+    # bump.
     - |
-      if ! git diff --cached --quiet; then
+      MAX_ATTEMPTS=5
+      attempt=1
+      while true; do
+        python scripts/update-image-tag.py "$K8S_MANIFEST_PATH/kustomization.yaml" "${IMAGE_TAG}"
+        git add "$K8S_MANIFEST_PATH/kustomization.yaml"
+        if git diff --cached --quiet; then
+          echo "No image tag change to commit"
+          break
+        fi
         git commit -m "Update $SERVICE_NAME ${ENV} image tag to ${IMAGE_TAG}"
-        git push https://${GITHUB_TOKEN}:x-oauth-basic@github.com/EBIvariation/eva-k8s.git main
-      fi
+        if git push origin main; then
+          echo "Pushed image tag update on attempt $attempt"
+          break
+        fi
+        if [ "$attempt" -ge "$MAX_ATTEMPTS" ]; then
+          echo "Failed to push image tag update after $MAX_ATTEMPTS attempts"
+          exit 1
+        fi
+        echo "Push rejected (likely a concurrent deploy job) - retrying (attempt $attempt/$MAX_ATTEMPTS)"
+        sleep $(( (RANDOM % 5) + 1 ))
+        git fetch --depth 1 origin main
+        git reset --hard FETCH_HEAD
+        attempt=$((attempt + 1))
+      done
 
     # Copy the application.properties where it is expected
     - cp -vf application.properties $K8S_MANIFEST_PATH/
