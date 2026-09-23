@@ -8,7 +8,7 @@ patches:
 - path: ingress-patch.yaml
 images:
 - name: dockerhub.ebi.ac.uk/ebivariation/eva-ws
-  newTag: dgva-server-v2.0.0
+  newTag: dgva-server-v2.0.1
 secretGenerator:
 - name: dgva-server-config
   files:
