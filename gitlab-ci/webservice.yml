@@ -126,7 +126,7 @@ variables:
 
     # Deploy to cluster
     - kubectl apply -k $K8S_MANIFEST_PATH
-    - kubectl rollout status deployment/$SERVICE_NAME -n $K8S_NAMESPACE --timeout=5m
+    - kubectl rollout status deployment/$SERVICE_NAME -n $SERVICE_NAME --timeout=5m
   environment:
     kubernetes:
-      namespace: $K8S_NAMESPACE
+      namespace: $SERVICE_NAME
