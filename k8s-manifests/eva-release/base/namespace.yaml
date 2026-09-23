@@ -2,3 +2,6 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: eva-release
+  labels:
+    app.kubernetes.io/name: eva-release
+    app.kubernetes.io/component: api

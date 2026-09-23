@@ -2,3 +2,6 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: eva-seqcol
+  labels:
+    app.kubernetes.io/name: eva-seqcol
+    app.kubernetes.io/component: api

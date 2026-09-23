@@ -3,12 +3,13 @@ kind: Kustomization
 
 namespace: eva-web
 
-commonLabels:
-  app.kubernetes.io/name: eva-web
-  app.kubernetes.io/component: frontend
+labels:
+- pairs:
+    app.kubernetes.io/name: eva-web
+    app.kubernetes.io/component: frontend
+  includeSelectors: true
 
 resources:
-- namespace.yaml
 - deployment.yaml
 - service.yaml
 - ingress.yaml
