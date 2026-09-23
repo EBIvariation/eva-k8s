@@ -8,7 +8,7 @@ patches:
 - path: ingress-patch.yaml
 images:
 - name: dockerhub.ebi.ac.uk/ebivariation/eva-accession
-  newTag: eva-accession-ws-dev-8147755e
+  newTag: eva-accession-ws-dev-58838890
 secretGenerator:
 - name: eva-accession-ws-config
   files:
