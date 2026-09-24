@@ -14,21 +14,20 @@ eva-k8s/
         │   ├── kustomization.yaml
         │   ├── deployment.yaml
         │   ├── service.yaml
-        │   └── ingress.yaml
+        │   ├── ingress.yaml
+        │   └── namespace.yaml        # namespace = service name, identical in every cluster
         └── overlays/
             ├── dev/                  # development environment (wwwint.ebi.ac.uk)
             │   ├── kustomization.yaml
-            │   ├── namespace.yaml
             │   ├── deployment-patch.yaml
             │   ├── ingress-patch.yaml
             │   └── application.properties  # generated at deploy time — never committed
             ├── local/                # local development (minikube / kind)
             │   ├── kustomization.yaml
-            │   ├── namespace.yaml
             │   ├── deployment-patch.yaml
             │   ├── service-patch.yaml
-            │   ├── postgres.yaml     # embedded PostgreSQL for local testing
-            │   └── application.properties  # generated at deploy time — never committed
+            │   ├── postgres.yaml     # embedded DB for local testing (or mongodb.yaml / oracle.yaml)
+            │   └── application.properties  # committed: points at the local DB only
             ├── staging/                # staging environment (wwwdev.ebi.ac.uk)
             │   ├── kustomization.yaml
             │   ...
@@ -39,12 +38,17 @@ eva-k8s/
 
 Current services:
 
-| Directory | Description                   |
-|-----------|-------------------------------|
-| [`k8s-manifests/eva-seqcol`](./k8s-manifests/eva-seqcol) | Sequence Collections REST API |
-| [`k8s-manifests/contig-alias`](./k8s-manifests/contig-alias) | Contig/chromosome alias resolution REST API |
-| [`k8s-manifests/eva-accession-ws`](./k8s-manifests/eva-accession-ws) | Variant Identifiers REST API  |
-| [`k8s-manifests/eva-web`](./k8s-manifests/eva-web) | Static frontend (nginx), served behind an `/eva` ingress path in dev/staging |
+| Directory | Description | Source repo | Ingress path |
+|-----------|-------------|-------------|--------------|
+| [`k8s-manifests/eva-server`](./k8s-manifests/eva-server) | Main EVA REST API (variants, studies, files) | eva-ws | `/eva/webservices/rest` |
+| [`k8s-manifests/eva-release`](./k8s-manifests/eva-release) | RS release REST API | eva-ws | `/eva/webservices/release` |
+| [`k8s-manifests/count-stats`](./k8s-manifests/count-stats) | Count statistics REST API | eva-ws | `/eva/webservices/count-stats` |
+| [`k8s-manifests/dgva-server`](./k8s-manifests/dgva-server) | DGVA REST API (no dev deployment: no DGVA dev database) | eva-ws | `/dgva/webservices/rest` |
+| [`k8s-manifests/eva-accession-ws`](./k8s-manifests/eva-accession-ws) | Variant Identifiers REST API | eva-accession | `/eva/webservices/identifiers` |
+| [`k8s-manifests/eva-seqcol`](./k8s-manifests/eva-seqcol) | Sequence Collections REST API | eva-seqcol | `/eva/webservices/seqcol` |
+| [`k8s-manifests/contig-alias`](./k8s-manifests/contig-alias) | Contig/chromosome alias resolution REST API | contig-alias | `/eva/webservices/contig-alias` |
+| [`k8s-manifests/eva-submission-ws`](./k8s-manifests/eva-submission-ws) | Submission REST API | eva-submission-ws | `/eva/webservices/submission-ws` |
+| [`k8s-manifests/eva-web`](./k8s-manifests/eva-web) | Static frontend (nginx) | eva-web | `/eva` |
 
 ## How deployment works
 
@@ -78,24 +82,33 @@ Maven settings.xml  ──[script]──►  application.properties
 
 ### GitLab CI pipeline
 
-The GitLab CI pipeline deploys a service whenever changes are merged to `main` or a tag is created in a service's directory. The pipeline:
+Deployments are driven by the GitLab CI pipelines of the application repositories (e.g. eva-ws), which include the
+shared template [`gitlab-ci/webservice.yml`](./gitlab-ci/webservice.yml) pinned to a tag of this repository and
+extend its `.build_docker` and `.update_and_deploy` jobs (eva-web uses a similar pipeline of its own).
+A merge to the `main` branch deploys to `dev` and `staging`; a git tag deploys to `prod` and `prod-fallback`.
 
-1. Detects which service directories changed.
-2. Resolves the target environment (e.g. `dev` for the `main` branch).
-3. Retrieves the Maven `settings.xml` from a GitLab CI/CD secret variable.
-4. Runs `scripts/maven-settings-to-properties.py` to generate `application.properties` in the overlay directory.
-5. Runs `kubectl apply -k <service>/overlays/<env>` against the EBI cluster.
+`.build_docker` builds and pushes the image (or re-tags an existing image for the same service and commit).
+`.update_and_deploy` then:
 
-The image tag to deploy is set via the `images[].newTag` field in the overlay's `kustomization.yaml`. CI updates this value before applying.
+1. Clones this repository and downloads the target cluster's kubeconfig from the private `EBIvariation/configuration` repository.
+2. Applies `base/namespace.yaml` and creates/updates the `regcred` image pull secret from `DOCKER_AUTH_CONFIG`.
+3. Downloads the Maven `settings.xml` and runs `scripts/maven-settings-to-properties.py` to generate `application.properties`.
+4. Runs `scripts/update-image-tag.py` to set `images[].newTag` in the overlay's `kustomization.yaml`, then commits and pushes that change to `main`.
+5. Runs `kubectl apply -k <overlay>` followed by `kubectl rollout status`.
+
+The git history of this repository is therefore a record of what was deployed where.
 
 ### Environments
 
-| Overlay   | Cluster host | Namespace pattern | Replicas         |
-|-----------|-------------|-------------------|-------------------|
-| `dev`     | wwwint.ebi.ac.uk | `<service>-dev`   | 1            |
-| `staging` | wwwdev.ebi.ac.uk | `<service>-stage` | 3 (1 for contig-alias) |
-| `prod`    | www.ebi.ac.uk | `<service>-prod`  | 3            | 
-| `local`   | localhost (minikube) | `<service>-local` | 1 + local DB|
+Each environment is a separate cluster, and the namespace is always the service name (e.g. `eva-seqcol`).
+
+| Overlay   | Cluster host | Maven profile |  Replicas |
+|-----------|--------------|---------------|-----------|----------|
+| `dev`     | wwwint.ebi.ac.uk | `development` |  1 |
+| `staging` | wwwdev.ebi.ac.uk | `production_processing` | 3 |
+| `prod`    | www.ebi.ac.uk | `production,$ACTIVE_EVAPRO` | 3 |
+| `prod` (fallback cluster) | www.ebi.ac.uk (fallback) | `production,production-fallback,${ACTIVE_EVAPRO}-fallback` | 3 |
+| `local`   | localhost (minikube / kind / Rancher Desktop) | committed `application.properties` | 1 + local DB |
 
 
 ## Prerequisites
@@ -138,7 +151,7 @@ minikube start
 kubectl apply -k k8s-manifests/eva-seqcol/overlays/local
 
 # Access the service
-kubectl port-forward -n eva-seqcol-local svc/eva-seqcol 8081:8081
+kubectl port-forward -n eva-seqcol svc/eva-seqcol 8081:8081
 ```
 
 ### eva-web 
@@ -154,10 +167,10 @@ cd /path/to/eva-web && docker build --build-arg ENVIRONMENT_NAME=dev -t eva-web:
 kubectl apply -k k8s-manifests/eva-web/overlays/local
 
 # The overlay exposes eva-web as a LoadBalancer Service find it with:
-kubectl get svc -n eva-web-local eva-web
+kubectl get svc -n eva-web eva-web
 
 # then browse http://<EXTERNAL-IP>:8090/eva/, or simply:
-kubectl port-forward -n eva-web-local svc/eva-web 8090:8090
+kubectl port-forward -n eva-web svc/eva-web 8090:8090
 ```
 
 eva-web serves its own `/eva` prefix directly (its Dockerfile copies the build into
