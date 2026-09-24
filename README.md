@@ -137,14 +137,19 @@ kubectl apply -k k8s-manifests/eva-seqcol/overlays/dev
 
 ### Run locally (minikube / kind)
 
+The application.properties file is stored in the manifest folder but you 
+can regenerate the application.properties for local profile with the following command:
 ```bash
-# Generate application.properties for local profile
 python scripts/maven-settings-to-properties.py \
   --maven_file ~/.m2/settings.xml \
   --profile localhost \
   --property_set eva-seqcol \
   --output k8s-manifests/eva-seqcol/overlays/local/application.properties
+```
 
+The application.properties file is committed to the repository so that it can be used by the CI pipeline.
+
+```bash
 # Start a local cluster if needed
 minikube start
 
