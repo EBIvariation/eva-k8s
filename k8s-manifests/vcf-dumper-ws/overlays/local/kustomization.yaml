@@ -1,0 +1,37 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# The namespace is not part of this overlay: create it first with
+#   kubectl apply -f k8s-manifests/vcf-dumper-ws/base/namespace.yaml
+namespace: vcf-dumper-ws
+
+resources:
+- mongodb.yaml
+- ../../base
+
+# Patch the base deployment for local testing
+patches:
+- path: deployment-patch.yaml
+- path: service-patch.yaml
+# Skip ingress and base secrets for local testing
+- target:
+    group: networking.k8s.io
+    version: v1
+    kind: Ingress
+    name: vcf-dumper-ws
+  patch: |
+    - op: replace
+      path: /spec/rules/0/host
+      value: localhost
+
+# Use local image
+images:
+- name: ebivariation/vcf-dumper-ws
+  newName: vcf-dumper-ws
+  newTag: local
+
+# Generate secret with application.properties for local testing
+secretGenerator:
+- name: vcf-dumper-ws-config
+  files:
+  - application.properties

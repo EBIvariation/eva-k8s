@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vcf-dumper-ws
+spec:
+  replicas: 1  # Single replica for development
+  template:
+    spec:
+      containers:
+      - name: vcf-dumper-ws
+        image: dockerhub.ebi.ac.uk/ebivariation/vcf-dumper-ws
+        imagePullPolicy: Always
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"

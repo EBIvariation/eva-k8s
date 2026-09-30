@@ -49,6 +49,7 @@ Current services:
 | [`k8s-manifests/contig-alias`](./k8s-manifests/contig-alias) | Contig/chromosome alias resolution REST API | contig-alias | `/eva/webservices/contig-alias` |
 | [`k8s-manifests/eva-submission-ws`](./k8s-manifests/eva-submission-ws) | Submission REST API | eva-submission-ws | `/eva/webservices/submission-ws` |
 | [`k8s-manifests/eva-web`](./k8s-manifests/eva-web) | Static frontend (nginx) | eva-web | `/eva` |
+| [`k8s-manifests/vcf-dumper-ws`](./k8s-manifests/vcf-dumper-ws) | VCF dumper: streams the variants of a study in VCF format (also htsget) | vcf-dumper | `/eva/webservices/vcf-dumper` |
 
 ## How deployment works
 
