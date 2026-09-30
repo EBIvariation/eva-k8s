@@ -21,15 +21,3 @@ spec:
           limits:
             memory: "1Gi"
             cpu: "500m"
-        # The base probe timings (tuned from a startup measured in a few seconds when uncontended) are too tight on a
-        # loaded local Rancher Desktop VM, where JVM startup can take a couple of minutes under CPU contention
-        livenessProbe:
-          initialDelaySeconds: 180
-          periodSeconds: 30
-          timeoutSeconds: 10
-          failureThreshold: 6
-        readinessProbe:
-          initialDelaySeconds: 120
-          periodSeconds: 10
-          timeoutSeconds: 5
-          failureThreshold: 6
