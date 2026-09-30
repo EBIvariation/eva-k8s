@@ -1,0 +1,16 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: vcf-dumper-ws
+spec:
+  rules:
+  - host: wwwint.ebi.ac.uk
+    http:
+      paths:
+      - path: /eva/webservices/vcf-dumper
+        pathType: Prefix
+        backend:
+          service:
+            name: vcf-dumper-ws
+            port:
+              number: 8080

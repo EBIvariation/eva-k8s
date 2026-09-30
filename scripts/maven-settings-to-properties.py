@@ -85,6 +85,20 @@ EVA_SERVER = {
     'contig-alias.url':                                 'contig-alias.url'
 }
 
+# Only the spring.data.mongodb.* properties known to the application can be set here: it rejects unknown ones
+VCF_DUMPER_WS_MAPPING = {
+    'spring.data.mongodb.host':                         'eva.mongo.host',
+    'spring.data.mongodb.authentication-database':      'eva.mongo.auth.db',
+    'spring.data.mongodb.username':                     'eva.mongo.user',
+    'spring.data.mongodb.password':                     'eva.mongo.passwd',
+    'spring.data.mongodb.read-preference':              'eva.mongo.read-preference',
+    'db.collection-names.files':                        'eva.mongo.collections.files',
+    'db.collection-names.variants':                     'eva.mongo.collections.variants',
+    'db.collection-names.annotation-metadata':          'eva.mongo.collections.annotation-metadata',
+    'db.collection-names.features':                     'eva.mongo.collections.features',
+    'db.collection-names.annotations':                  'eva.mongo.collections.annotations'
+}
+
 EVA_SUBMISSION_WS_MAPPING = {
     'controller.auth.admin.username':         'submission-ws.admin-user',
     'controller.auth.admin.password':         'submission-ws.admin-password',
@@ -115,7 +129,8 @@ PROPERTY_SETS = {
     'dgva-server': DGVA_SERVER,
     'eva-release': EVA_RELEASE,
     'count-stats': COUNT_STATS,
-    'eva-submission-ws': EVA_SUBMISSION_WS_MAPPING
+    'eva-submission-ws': EVA_SUBMISSION_WS_MAPPING,
+    'vcf-dumper-ws': VCF_DUMPER_WS_MAPPING
 }
 
 

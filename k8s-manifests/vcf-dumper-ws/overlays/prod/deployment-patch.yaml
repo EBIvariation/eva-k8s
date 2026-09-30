@@ -1,0 +1,14 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vcf-dumper-ws
+spec:
+  replicas: 3  # 1 replica per node across the 3-node cluster, matching staging
+  template:
+    spec:
+      containers:
+      - name: vcf-dumper-ws
+        image: dockerhub.ebi.ac.uk/ebivariation/vcf-dumper-ws
+        imagePullPolicy: Always
+        # Resources are inherited from the base (2Gi memory limit): each export holds the variants of a whole
+        # window in memory before writing them, which can be large for studies with many samples

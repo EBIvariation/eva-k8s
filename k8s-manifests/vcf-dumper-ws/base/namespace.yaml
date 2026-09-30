@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: vcf-dumper-ws
+  labels:
+    app.kubernetes.io/name: vcf-dumper-ws
+    app.kubernetes.io/component: api

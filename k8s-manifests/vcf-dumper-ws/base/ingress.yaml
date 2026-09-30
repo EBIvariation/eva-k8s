@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: vcf-dumper-ws
+  labels:
+    app: vcf-dumper-ws
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+spec:
+  rules:
+  - host: vcf-dumper-ws.example.com  # Replace with your actual hostname
+    http:
+      paths:
+      - path: /eva/webservices/vcf-dumper
+        pathType: Prefix
+        backend:
+          service:
+            name: vcf-dumper-ws
+            port:
+              number: 8080

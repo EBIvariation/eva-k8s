@@ -1,0 +1,104 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vcf-dumper-ws
+  labels:
+    app: vcf-dumper-ws
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: vcf-dumper-ws
+  template:
+    metadata:
+      labels:
+        app: vcf-dumper-ws
+    spec:
+      # Exports are streamed and can last up to 5 minutes. The application shuts down gracefully (it stops accepting
+      # requests and waits for the running ones for up to 5 minutes, spring.lifecycle.timeout-per-shutdown-phase),
+      # so leave it that long, plus a margin, before the pod is killed
+      terminationGracePeriodSeconds: 330
+
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+
+      imagePullSecrets:
+      - name: regcred
+
+      containers:
+      - name: vcf-dumper-ws
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+
+        env:
+        # JVM tuning for containers
+        - name: JAVA_OPTS
+          value: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+UseG1GC"
+
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+
+        # The application serves the Spring Boot health probe groups (management.endpoint.health.probes.enabled).
+        # Neither group includes the MongoDB health check, so a database outage does not restart the pods.
+        # The application starts in a few seconds, so the initial delays are shorter than in the other services
+        # to keep rollouts well within the 5 minutes that the CI waits for them.
+        livenessProbe:
+          httpGet:
+            path: /eva/webservices/vcf-dumper/actuator/health/liveness
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+
+        readinessProbe:
+          httpGet:
+            path: /eva/webservices/vcf-dumper/actuator/health/readiness
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+
+        volumeMounts:
+        - name: tmp-volume
+          mountPath: /tmp
+        - name: config-volume
+          mountPath: /app/config
+          readOnly: true
+
+      volumes:
+      - name: tmp-volume
+        emptyDir: {}
+      - name: config-volume
+        secret:
+          secretName: vcf-dumper-ws-config
+          items:
+          - key: application.properties
+            path: application.properties
+          defaultMode: 0444
+
+      # Spread pods across nodes for high availability
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app: vcf-dumper-ws
+              topologyKey: kubernetes.io/hostname

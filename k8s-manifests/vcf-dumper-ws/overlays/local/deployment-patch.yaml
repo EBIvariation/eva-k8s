@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vcf-dumper-ws
+spec:
+  replicas: 1  # Single replica for local testing
+  template:
+    spec:
+      securityContext:
+        runAsNonRoot: false  # Allow running as root for local testing
+        runAsUser: 0
+        fsGroup: 0
+      containers:
+      - name: vcf-dumper-ws
+        image: ebivariation/vcf-dumper-ws
+        imagePullPolicy: Never  # Use local image
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        # The base probe timings (tuned from a startup measured in a few seconds when uncontended) are too tight on a
+        # loaded local Rancher Desktop VM, where JVM startup can take a couple of minutes under CPU contention
+        livenessProbe:
+          initialDelaySeconds: 180
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 6
+        readinessProbe:
+          initialDelaySeconds: 120
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 6
