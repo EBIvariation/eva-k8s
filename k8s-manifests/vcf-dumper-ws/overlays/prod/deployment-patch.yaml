@@ -10,5 +10,3 @@ spec:
       - name: vcf-dumper-ws
         image: dockerhub.ebi.ac.uk/ebivariation/vcf-dumper-ws
         imagePullPolicy: Always
-        # Resources are inherited from the base (2Gi memory limit): each export holds the variants of a whole
-        # window in memory before writing them, which can be large for studies with many samples

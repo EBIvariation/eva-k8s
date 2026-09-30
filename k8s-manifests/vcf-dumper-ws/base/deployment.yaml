@@ -44,6 +44,8 @@ spec:
         - name: JAVA_OPTS
           value: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+UseG1GC"
 
+        # Each export holds the variants of a whole window in memory before writing them, which can be large for
+        # studies with many samples (2Gi memory limit)
         resources:
           requests:
             memory: "512Mi"
@@ -52,10 +54,6 @@ spec:
             memory: "2Gi"
             cpu: "1000m"
 
-        # The application serves the Spring Boot health probe groups (management.endpoint.health.probes.enabled).
-        # Neither group includes the MongoDB health check, so a database outage does not restart the pods.
-        # The application starts in a few seconds, so the initial delays are shorter than in the other services
-        # to keep rollouts well within the 5 minutes that the CI waits for them.
         livenessProbe:
           httpGet:
             path: /eva/webservices/vcf-dumper/actuator/health/liveness
