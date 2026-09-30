@@ -85,7 +85,6 @@ EVA_SERVER = {
     'contig-alias.url':                                 'contig-alias.url'
 }
 
-# Only the spring.data.mongodb.* properties known to the application can be set here: it rejects unknown ones
 VCF_DUMPER_WS_MAPPING = {
     'spring.data.mongodb.host':                         'eva.mongo.host',
     'spring.data.mongodb.authentication-database':      'eva.mongo.auth.db',
