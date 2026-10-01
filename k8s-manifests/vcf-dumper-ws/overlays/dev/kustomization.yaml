@@ -7,7 +7,7 @@ patches:
 - path: deployment-patch.yaml
 - path: ingress-patch.yaml
 images:
-- name: dockerhub.ebi.ac.uk/ebivariation/vcf-dumper-ws
+- name: dockerhub.ebi.ac.uk/ebivariation/vcf-dumper
   newTag: vcf-dumper-ws-dev-1fd02a8d
 secretGenerator:
 - name: vcf-dumper-ws-config

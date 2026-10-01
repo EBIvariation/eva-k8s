@@ -7,7 +7,7 @@ patches:
 - path: deployment-patch.yaml
 - path: ingress-patch.yaml
 images:
-- name: dockerhub.ebi.ac.uk/ebivariation/vcf-dumper-ws
+- name: dockerhub.ebi.ac.uk/ebivariation/vcf-dumper
   newTag: not-set  # placeholder - overwritten by CI before every real deploy; deliberately invalid so an accidental deploy before that fails loudly (ImagePullBackOff) instead of silently running an old dev/staging image.
 secretGenerator:
 - name: vcf-dumper-ws-config
