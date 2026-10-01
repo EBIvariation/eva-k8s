@@ -8,5 +8,5 @@ spec:
     spec:
       containers:
       - name: vcf-dumper-ws
-        image: dockerhub.ebi.ac.uk/ebivariation/vcf-dumper-ws
+        image: dockerhub.ebi.ac.uk/ebivariation/vcf-dumper
         imagePullPolicy: Always
