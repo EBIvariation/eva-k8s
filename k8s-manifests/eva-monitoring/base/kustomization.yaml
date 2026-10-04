@@ -1,8 +1,11 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-# Monitoring shared by every EVA service: one scrape configuration, one set of alert rules and one alert route
-# per cluster. Deployed by the pipeline in .gitlab-ci.yml at the root of this repository.
+# Set up the Monitoring shared by every EVA service:
+#  * one configuration to extract metrics from the actuators (servicemonitor.yaml)
+#  * one set of alert rules (prometheusrule.yaml)
+#  * one alert route (alertmanagerconfig.yaml)
+# per cluster.
 
 namespace: eva-monitoring
 
@@ -11,10 +14,7 @@ resources:
 - prometheusrule.yaml
 - alertmanagerconfig.yaml
 
-# monitoring.env is generated at deploy time in this directory.
-
-# The Secret holds the credentials Prometheus uses to scrape the actuators (the username and password keys).
-# The name must stay stable because the ServiceMonitor refers to it.
+# The Secret holds the credentials Prometheus uses to scrape the actuators
 secretGenerator:
 - name: actuator-credentials
   envs:

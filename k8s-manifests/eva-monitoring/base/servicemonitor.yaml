@@ -7,7 +7,7 @@ metadata:
     release: prometheus
 spec:
   # Scrape, in any namespace, the Services that opted in. The label is added by service-component/, which a
-  # service includes from its overlays once its image serves the actuator on the management port.
+  # service includes from its overlays; the service must serve the actuator on its management port.
   namespaceSelector:
     any: true
   selector:

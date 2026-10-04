@@ -1,10 +1,10 @@
 apiVersion: kustomize.config.k8s.io/v1alpha1
 kind: Component
 
-# What a service includes from its dev, staging and prod overlays to be monitored:
+# Service should include the following in each overlay (dev, staging and prod) to be monitored:
 #   components:
 #   - ../../../eva-monitoring/service-component
-# Not for the local overlay: the label is only useful with the shared ServiceMonitor.
+
 # The service's Deployment must name its container ports "http" and "management".
 
 resources:

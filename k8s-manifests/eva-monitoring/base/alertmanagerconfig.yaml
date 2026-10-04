@@ -3,9 +3,8 @@ kind: AlertmanagerConfig
 metadata:
   name: eva-services
 spec:
-  # Alertmanager only applies this route to alerts whose namespace label is the namespace of this resource,
-  # which is why every rule in prometheusrule.yaml sets namespace to eva-monitoring. Within those, the
-  # notification label chooses the receiver: this route takes the alerts labelled eva-services-email.
+  # This route takes alerts labelled notification=eva-services-email. The operator also restricts it to alerts
+  # labelled namespace=eva-monitoring (the namespace of this resource), which is why every rule sets that label.
   route:
     receiver: email
     matchers:
@@ -21,14 +20,13 @@ spec:
   receivers:
   - name: email
     emailConfigs:
-    # Placeholders: kustomization.yaml replaces the addresses and the mail server with the values of monitoring.env,
-    # generated at deploy time from the Maven settings
+    # Placeholder value: kustomization.yaml replaces the addresses and the mail server with the values of monitoring.env
     - to: alerts@example.org
       from: noreply@example.org
       smarthost: smtp.example.org:25
       requireTLS: false
       sendResolved: true
       headers:
-      # Replaced in each overlay to name the environment
+      # Subject replaced in each overlay to name the environment
       - key: Subject
         value: '{{ template "email.default.subject" . }}'

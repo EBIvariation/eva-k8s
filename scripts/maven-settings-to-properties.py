@@ -124,7 +124,8 @@ EVA_SUBMISSION_WS_MAPPING = {
 
 # Not an application.properties: the monitoring.env file (same key=value format) of the eva-monitoring overlays.
 # username/password are the credentials Prometheus scrapes the actuators with (actuator-credentials Secret);
-# to/from/smarthost are copied into the AlertmanagerConfig email receiver, so that no address is committed.
+# to/from/smarthost are copied into the AlertmanagerConfig email receiver, which only holds placeholders in this
+# repository.
 MONITORING_ENV = {
     'username':   'eva.actuator.user',
     'password':   'eva.actuator.password',
