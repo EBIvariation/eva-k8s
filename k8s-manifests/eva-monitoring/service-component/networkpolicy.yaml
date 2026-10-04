@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: restrict-management-port
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: api
+  policyTypes:
+  - Ingress
+  ingress:
+  # Application port: open, it is what the ingress controller and the kubelet probes call
+  - ports:
+    - port: http
+      protocol: TCP
+  # Management port (actuator): only Prometheus, which runs in the monitoring namespace
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: monitoring
+    ports:
+    - port: management
+      protocol: TCP
