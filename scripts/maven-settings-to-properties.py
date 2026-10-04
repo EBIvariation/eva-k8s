@@ -22,6 +22,8 @@ EVA_SEQCOL_MAPPING = {
     'spring.jpa.hibernate.ddl-auto':   '=update',
     'controller.auth.admin.username':  'seqcol.admin-user',
     'controller.auth.admin.password':  'seqcol.admin-password',
+    'actuator.auth.username':          'eva.actuator.user',
+    'actuator.auth.password':          'eva.actuator.password',
     'ftp.proxy.host':                  '=null',
     'ftp.proxy.port':                  '=0'
 }
@@ -120,6 +122,17 @@ EVA_SUBMISSION_WS_MAPPING = {
     'eva.submission.account':                 'eva.submission.account'
 }
 
+# Not an application.properties: the monitoring.env file (same key=value format) of the eva-monitoring overlays.
+# username/password are the credentials Prometheus scrapes the actuators with (actuator-credentials Secret);
+# to/from/smarthost are copied into the AlertmanagerConfig email receiver, so that no address is committed.
+MONITORING_ENV = {
+    'username':   'eva.actuator.user',
+    'password':   'eva.actuator.password',
+    'to':         'eva.alerts.email-to',
+    'from':       'eva.alerts.email-from',
+    'smarthost':  '|eva.email-server|:|eva.email-port|'
+}
+
 PROPERTY_SETS = {
     'eva-seqcol': EVA_SEQCOL_MAPPING,
     'contig-alias': CONTIG_ALIAS_MAPPING,
@@ -129,7 +142,8 @@ PROPERTY_SETS = {
     'eva-release': EVA_RELEASE,
     'count-stats': COUNT_STATS,
     'eva-submission-ws': EVA_SUBMISSION_WS_MAPPING,
-    'vcf-dumper-ws': VCF_DUMPER_WS_MAPPING
+    'vcf-dumper-ws': VCF_DUMPER_WS_MAPPING,
+    'monitoring': MONITORING_ENV
 }
 
 
