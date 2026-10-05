@@ -86,7 +86,11 @@ jobs:
             echo "✓ Built successfully"
 
             echo "--- Schema validation (kubeconform) ---"
-            kubeconform -strict "$manifest"
+            # Add second schema location covers the Prometheus custom resources (ServiceMonitor, ...)
+            kubeconform -strict \
+              -schema-location default \
+              -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json' \
+              "$manifest"
             echo "✓ Schema valid"
 
             echo "--- Security scan (kubesec) ---"
