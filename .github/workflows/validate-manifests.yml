@@ -73,7 +73,6 @@ jobs:
               stub_files+=("$overlay/application.properties")
             fi
             if grep -q "monitoring.env" "$overlay/../../base/kustomization.yaml" 2>/dev/null; then
-              # Not empty: the base copies to, from and smarthost into the AlertmanagerConfig
               printf 'username=stub\npassword=stub\nto=alerts@example.org\nfrom=noreply@example.org\nsmarthost=smtp.example.org:25\n' > "$overlay/../../base/monitoring.env"
               stub_files+=("$overlay/../../base/monitoring.env")
             fi
