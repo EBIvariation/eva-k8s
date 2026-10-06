@@ -233,12 +233,37 @@ To validate locally before pushing:
 kustomize build k8s-manifests/eva-seqcol/overlays/dev
 ```
 
+## Monitoring
+
+Metrics, alerts and their thresholds, alert routing and the rollout procedure are described in
+[`docs/monitoring.md`](./docs/monitoring.md). In short:
+
+- [`k8s-manifests/eva-monitoring`](./k8s-manifests/eva-monitoring) is not a service. It holds the monitoring
+  shared by all services, deployed once per cluster in the `eva-monitoring` namespace: one `ServiceMonitor` that
+  makes Prometheus scrape every monitored service, one `PrometheusRule` with the alert rules, and one
+  `AlertmanagerConfig` that emails the alerts. It has its own GitLab pipeline, [`.gitlab-ci.yml`](./.gitlab-ci.yml)
+  at the root of this repository, in which every deployment is started by hand: run the pipeline on `main`,
+  then start the job of each cluster.
+- A monitored service serves the actuator on a separate management port (9090) that requires authentication and
+  is not routed by the ingress, and its probes use `<context-path>/livez` and `<context-path>/readyz` on the
+  application port. Its `dev`, `staging` and `prod` overlays include the component
+  `eva-monitoring/service-component`, which labels the Service for scraping and adds a `NetworkPolicy` restricting
+  the management port to Prometheus. There is no monitoring file to write per service.
+- Nothing sensitive is committed. Prometheus authenticates with the `actuator-credentials` Secret, and the
+  `AlertmanagerConfig` only holds placeholders for the recipient, sender and mail server. Both are filled at
+  deploy time from `monitoring.env`, produced by `scripts/maven-settings-to-properties.py` with the `monitoring`
+  property set.
+
+The pod, resource and ingress alerts cover every service; application metrics are scraped for every service except
+`eva-web`, which has no actuator.
+
 ## Secrets management
 
 - `application.properties` files are **never committed** — they are listed in `.gitignore` and generated at deploy time.
 - The source of truth for environment-specific values is the Maven `settings.xml`.
 - For manual deployments, use your local maven `settings.xml` and generate `application.properties` with the conversion script (see [Deploy to dev](#deploy-to-dev)).
 - The generated `application.properties` is packaged into a Kubernetes Secret by `kustomize`.
+- The `monitoring.env` file of `eva-monitoring` (in its `base/`) follows the same rules: generated at deploy time and git-ignored. It is packaged into the `actuator-credentials` Secret and read by Kustomize to fill in the `AlertmanagerConfig`.
 
 ## Adding a new service
 
@@ -247,6 +272,7 @@ kustomize build k8s-manifests/eva-seqcol/overlays/dev
 3. Create `k8s-manifests/<service-name>/overlays/local/` for local development.
 4. Add the service to the table in this README.
 5. Configure the corresponding GitLab CI/CD variables for secrets.
+6. Include the `eva-monitoring/service-component` component from the `dev`, `staging` and `prod` overlays and add the namespace to the list at the top of `k8s-manifests/eva-monitoring/base/prometheusrule.yaml` (see [`docs/monitoring.md`](./docs/monitoring.md)).
 
 ## Image tagging
 
