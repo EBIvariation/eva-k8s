@@ -11,10 +11,14 @@ resources:
 - networkpolicy.yaml
 
 patches:
-# Opt the Service in to scraping by the shared ServiceMonitor (the / of the label key is written ~1)
+# Opt the Service in to scraping by the shared ServiceMonitor, which selects this label. The label is merged into
+# every Service of the overlay; the name in the patch is ignored because the target selects the Service.
 - target:
     kind: Service
   patch: |
-    - op: add
-      path: /metadata/labels/eva-monitoring~1scrape
-      value: "true"
+    apiVersion: v1
+    kind: Service
+    metadata:
+      name: any
+      labels:
+        eva-monitoring/scrape: "true"
