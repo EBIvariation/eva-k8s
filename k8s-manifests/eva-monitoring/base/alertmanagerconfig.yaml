@@ -1,0 +1,32 @@
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: eva-services
+spec:
+  # This route takes alerts labelled notification=eva-services-email. The operator also restricts it to alerts
+  # labelled namespace=eva-monitoring (the namespace of this resource), which is why every rule sets that label.
+  route:
+    receiver: email
+    matchers:
+    - name: notification
+      value: eva-services-email
+      matchType: "="
+    groupBy:
+    - alertname
+    - eva_service
+    groupWait: 30s
+    groupInterval: 5m
+    repeatInterval: 12h
+  receivers:
+  - name: email
+    emailConfigs:
+    # Placeholder value: kustomization.yaml replaces the addresses and the mail server with the values of monitoring.env
+    - to: alerts@example.org
+      from: noreply@example.org
+      smarthost: smtp.example.org:25
+      requireTLS: false
+      sendResolved: true
+      headers:
+      # Subject replaced in each overlay to name the environment
+      - key: Subject
+        value: '{{ template "email.default.subject" . }}'

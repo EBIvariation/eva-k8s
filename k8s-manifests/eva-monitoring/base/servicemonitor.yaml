@@ -1,0 +1,26 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: eva-services
+  labels:
+    # The cluster's Prometheus only selects resources carrying this label
+    release: prometheus
+spec:
+  # Scrape, in any namespace, the Services that opted in. The label is added by service-component/, which a
+  # service includes from its overlays; the service must serve the actuator on its management port.
+  namespaceSelector:
+    any: true
+  selector:
+    matchLabels:
+      eva-monitoring/scrape: "true"
+  endpoints:
+  - port: management
+    path: /actuator/prometheus
+    interval: 30s
+    basicAuth:
+      username:
+        name: actuator-credentials
+        key: username
+      password:
+        name: actuator-credentials
+        key: password

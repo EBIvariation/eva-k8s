@@ -1,0 +1,24 @@
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+
+# Service should include the following in each overlay (dev, staging and prod) to be monitored:
+#   components:
+#   - ../../../eva-monitoring/service-component
+
+# The service's Deployment must name its container ports "http" and "management".
+
+resources:
+- networkpolicy.yaml
+
+patches:
+# Opt the Service in to scraping by the shared ServiceMonitor, which selects this label. The label is merged into
+# every Service of the overlay; the name in the patch is ignored because the target selects the Service.
+- target:
+    kind: Service
+  patch: |
+    apiVersion: v1
+    kind: Service
+    metadata:
+      name: any
+      labels:
+        eva-monitoring/scrape: "true"

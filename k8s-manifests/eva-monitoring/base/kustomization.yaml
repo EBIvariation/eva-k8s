@@ -1,0 +1,47 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Set up the Monitoring shared by every EVA service:
+#  * one configuration to extract metrics from the actuators (servicemonitor.yaml)
+#  * one set of alert rules (prometheusrule.yaml)
+#  * one alert route (alertmanagerconfig.yaml)
+# per cluster.
+
+namespace: eva-monitoring
+
+resources:
+- servicemonitor.yaml
+- prometheusrule.yaml
+- alertmanagerconfig.yaml
+
+# The Secret holds the credentials Prometheus uses to scrape the actuators
+secretGenerator:
+- name: actuator-credentials
+  envs:
+  - monitoring.env
+  options:
+    disableNameSuffixHash: true
+
+# Only used as the source of the replacements below (to, from, smarthost): the local-config annotation keeps the
+# ConfigMap itself out of the cluster.
+configMapGenerator:
+- name: alerting
+  envs:
+  - monitoring.env
+  options:
+    annotations:
+      config.kubernetes.io/local-config: "true"
+
+replacements:
+- source: {kind: ConfigMap, name: alerting, fieldPath: data.to}
+  targets:
+  - select: {kind: AlertmanagerConfig, name: eva-services}
+    fieldPaths: [spec.receivers.0.emailConfigs.0.to]
+- source: {kind: ConfigMap, name: alerting, fieldPath: data.from}
+  targets:
+  - select: {kind: AlertmanagerConfig, name: eva-services}
+    fieldPaths: [spec.receivers.0.emailConfigs.0.from]
+- source: {kind: ConfigMap, name: alerting, fieldPath: data.smarthost}
+  targets:
+  - select: {kind: AlertmanagerConfig, name: eva-services}
+    fieldPaths: [spec.receivers.0.emailConfigs.0.smarthost]

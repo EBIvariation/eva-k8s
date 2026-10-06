@@ -1,0 +1,217 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: eva-services
+  labels:
+    # The cluster's Prometheus only selects resources carrying this label
+    release: prometheus
+spec:
+  # How the rules are built:
+  # - The first group records which namespaces are EVA services. It is the only place to edit when a service is
+  #   added. Every alert multiplies its condition by that series (value 1), which restricts the alert to those
+  #   namespaces and copies the service name into the eva_service label.
+  # - Every alert then sets namespace to eva-monitoring: Alertmanager only routes an alert to the
+  #   AlertmanagerConfig that lives in the namespace named by that label.
+  # - The notification label picks the route, and so the receiver, in alertmanagerconfig.yaml. To send an alert
+  #   somewhere else, add a route matching another value and set that value on the alert.
+  groups:
+  - name: eva.services
+    rules:
+    # One series per monitored namespace. The namespace is also exposed as exported_namespace, which is the label
+    # the ingress controller metrics use.
+    - record: eva:monitored_namespace:info
+      expr: |
+        label_replace(
+          label_replace(
+            group by (namespace) (
+              kube_namespace_status_phase{namespace=~"contig-alias|count-stats|dgva-server|eva-accession-ws|eva-release|eva-seqcol|eva-server|eva-submission-ws|eva-web|vcf-dumper-ws"}
+            ),
+            "eva_service", "$1", "namespace", "(.+)"
+          ),
+          "exported_namespace", "$1", "namespace", "(.+)"
+        )
+
+  # Pod and deployment state, from kube-state-metrics and the kubelet
+  - name: eva.workload
+    rules:
+    - alert: ServiceDown
+      expr: |
+        (kube_deployment_status_replicas_available == 0)
+          * on (namespace) group_left (eva_service) eva:monitored_namespace:info
+      for: 2m
+      labels:
+        severity: critical
+        namespace: eva-monitoring
+        notification: eva-services-email
+      annotations:
+        summary: '{{ $labels.eva_service }} has no available replica'
+        description: No pod of deployment {{ $labels.deployment }} has been available for 2 minutes. The service is down.
+    - alert: ReplicasMismatch
+      expr: |
+        (kube_deployment_status_replicas_available < kube_deployment_spec_replicas)
+          * on (namespace) group_left (eva_service) eva:monitored_namespace:info
+      for: 15m
+      labels:
+        severity: warning
+        namespace: eva-monitoring
+        notification: eva-services-email
+      annotations:
+        summary: '{{ $labels.eva_service }} is running fewer replicas than requested'
+        description: Only {{ $value }} replica(s) of deployment {{ $labels.deployment }} have been available for 15 minutes.
+    - alert: PodNotReady
+      expr: |
+        (kube_pod_status_ready{condition="true"} == 0)
+          * on (namespace) group_left (eva_service) eva:monitored_namespace:info
+      for: 10m
+      labels:
+        severity: warning
+        namespace: eva-monitoring
+        notification: eva-services-email
+      annotations:
+        summary: '{{ $labels.eva_service }}: pod {{ $labels.pod }} is not ready'
+        description: Pod {{ $labels.pod }} has failed its readiness probe for 10 minutes.
+    - alert: PodRestarting
+      expr: |
+        (increase(kube_pod_container_status_restarts_total[30m]) > 2)
+          * on (namespace) group_left (eva_service) eva:monitored_namespace:info
+      labels:
+        severity: warning
+        namespace: eva-monitoring
+        notification: eva-services-email
+      annotations:
+        summary: '{{ $labels.eva_service }}: pod {{ $labels.pod }} keeps restarting'
+        description: Container {{ $labels.container }} of pod {{ $labels.pod }} restarted more than twice in 30 minutes.
+    - alert: PodOOMKilled
+      expr: |
+        (
+          (kube_pod_container_status_last_terminated_reason{reason="OOMKilled"} == 1)
+            and on (namespace, pod, container)
+          (increase(kube_pod_container_status_restarts_total[10m]) > 0)
+        )
+          * on (namespace) group_left (eva_service) eva:monitored_namespace:info
+      labels:
+        severity: warning
+        namespace: eva-monitoring
+        notification: eva-services-email
+      annotations:
+        summary: '{{ $labels.eva_service }}: pod {{ $labels.pod }} was killed for exceeding its memory limit'
+        description: Container {{ $labels.container }} of pod {{ $labels.pod }} was OOMKilled in the last 10 minutes.
+    - alert: ContainerMemoryNearLimit
+      expr: |
+        (
+          sum by (namespace, pod, container) (container_memory_working_set_bytes{container!="", container!="POD"})
+            / sum by (namespace, pod, container) (kube_pod_container_resource_limits{resource="memory"})
+            > 0.9
+        )
+          * on (namespace) group_left (eva_service) eva:monitored_namespace:info
+      for: 15m
+      labels:
+        severity: warning
+        namespace: eva-monitoring
+        notification: eva-services-email
+      annotations:
+        summary: '{{ $labels.eva_service }}: pod {{ $labels.pod }} is close to its memory limit'
+        description: Container {{ $labels.container }} of pod {{ $labels.pod }} has used {{ $value | humanizePercentage }} of its memory limit for 15 minutes.
+    - alert: CPUThrottlingHigh
+      expr: |
+        (
+          sum by (namespace, pod, container) (increase(container_cpu_cfs_throttled_periods_total{container!=""}[5m]))
+            / sum by (namespace, pod, container) (increase(container_cpu_cfs_periods_total{container!=""}[5m]))
+            > 0.25
+        )
+          * on (namespace) group_left (eva_service) eva:monitored_namespace:info
+      for: 15m
+      labels:
+        severity: warning
+        namespace: eva-monitoring
+        notification: eva-services-email
+      annotations:
+        summary: '{{ $labels.eva_service }}: pod {{ $labels.pod }} is being CPU throttled'
+        description: Container {{ $labels.container }} of pod {{ $labels.pod }} was throttled in {{ $value | humanizePercentage }} of CPU periods for 15 minutes.
+
+  # What users see, from the ingress controller. Its metrics carry the service namespace as exported_namespace.
+  - name: eva.traffic
+    rules:
+    - alert: High5xxRate
+      expr: |
+        (
+          (
+            sum by (exported_namespace) (rate(nginx_ingress_controller_requests{status=~"5.."}[5m]))
+              / sum by (exported_namespace) (rate(nginx_ingress_controller_requests[5m]))
+              > 0.05
+          )
+            and
+          (sum by (exported_namespace) (rate(nginx_ingress_controller_requests[5m])) > 0.05)
+        )
+          * on (exported_namespace) group_left (eva_service) eva:monitored_namespace:info
+      for: 10m
+      labels:
+        severity: critical
+        namespace: eva-monitoring
+        notification: eva-services-email
+      annotations:
+        summary: '{{ $labels.eva_service }} is returning many server errors'
+        description: '{{ $value | humanizePercentage }} of the requests to {{ $labels.eva_service }} have returned a 5xx status for 10 minutes.'
+    # Not for vcf-dumper-ws: its exports are streamed and last minutes by design
+    - alert: HighLatencyP95
+      expr: |
+        (
+          histogram_quantile(0.95,
+            sum by (le, exported_namespace) (rate(nginx_ingress_controller_request_duration_seconds_bucket{exported_namespace!="vcf-dumper-ws"}[5m]))
+          ) > 5
+        )
+          * on (exported_namespace) group_left (eva_service) eva:monitored_namespace:info
+      for: 15m
+      labels:
+        severity: warning
+        namespace: eva-monitoring
+        notification: eva-services-email
+      annotations:
+        summary: '{{ $labels.eva_service }} is slow'
+        description: The 95th percentile of request duration for {{ $labels.eva_service }} has been {{ $value | humanizeDuration }} for 15 minutes.
+
+  # Application internals, from the actuator Prometheus endpoint. They only have data for the services that
+  # include eva-monitoring/service-component.
+  - name: eva.application
+    rules:
+    - alert: MetricsTargetDown
+      expr: |
+        (up{endpoint="management"} == 0)
+          * on (namespace) group_left (eva_service) eva:monitored_namespace:info
+      for: 5m
+      labels:
+        severity: warning
+        namespace: eva-monitoring
+        notification: eva-services-email
+      annotations:
+        summary: '{{ $labels.eva_service }}: Prometheus cannot scrape {{ $labels.pod }}'
+        description: The actuator metrics endpoint of pod {{ $labels.pod }} has been unreachable for 5 minutes.
+    - alert: JvmHeapHigh
+      expr: |
+        (
+          sum by (namespace, pod) (jvm_memory_used_bytes{area="heap"})
+            / sum by (namespace, pod) (jvm_memory_max_bytes{area="heap"})
+            > 0.9
+        )
+          * on (namespace) group_left (eva_service) eva:monitored_namespace:info
+      for: 15m
+      labels:
+        severity: warning
+        namespace: eva-monitoring
+        notification: eva-services-email
+      annotations:
+        summary: '{{ $labels.eva_service }}: JVM heap of {{ $labels.pod }} is almost full'
+        description: Pod {{ $labels.pod }} has used {{ $value | humanizePercentage }} of its JVM heap for 15 minutes.
+    # Only the services with a JDBC connection pool expose this metric
+    - alert: DbPoolExhausted
+      expr: |
+        (hikaricp_connections_pending > 0)
+          * on (namespace) group_left (eva_service) eva:monitored_namespace:info
+      for: 5m
+      labels:
+        severity: warning
+        namespace: eva-monitoring
+        notification: eva-services-email
+      annotations:
+        summary: '{{ $labels.eva_service }}: requests of {{ $labels.pod }} are waiting for a database connection'
+        description: '{{ $value }} thread(s) of pod {{ $labels.pod }} have been waiting for a database connection for 5 minutes.'

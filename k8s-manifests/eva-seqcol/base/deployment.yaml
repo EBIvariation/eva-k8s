@@ -31,7 +31,13 @@ spec:
       - name: eva-seqcol
         imagePullPolicy: Always
         ports:
-        - containerPort: 8081
+        # The port names are what the shared NetworkPolicy and ServiceMonitor of eva-monitoring refer to
+        - name: http
+          containerPort: 8081
+          protocol: TCP
+        # Actuator (metrics). Not routed by the ingress and only reachable by Prometheus
+        - name: management
+          containerPort: 9090
           protocol: TCP
 
         env:
@@ -51,9 +57,11 @@ spec:
             memory: "2Gi"
             cpu: "1000m"
 
+        # The actuator endpoints require authentication, which the kubelet cannot provide, so the application also
+        # serves its liveness and readiness health groups (status only) on the application port.
         livenessProbe:
           httpGet:
-            path: /eva/webservices/seqcol/health
+            path: /eva/webservices/seqcol/livez
             port: 8081
           initialDelaySeconds: 90
           periodSeconds: 30
@@ -62,7 +70,7 @@ spec:
 
         readinessProbe:
           httpGet:
-            path: /eva/webservices/seqcol/health
+            path: /eva/webservices/seqcol/readyz
             port: 8081
           initialDelaySeconds: 60
           periodSeconds: 10
