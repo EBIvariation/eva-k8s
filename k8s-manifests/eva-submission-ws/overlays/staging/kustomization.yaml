@@ -3,7 +3,6 @@ kind: Kustomization
 namespace: eva-submission-ws
 resources:
 - ../../base
-# Monitored service: restrict the management port and opt in to scraping
 components:
 - ../../../eva-monitoring/service-component
 patches:
@@ -11,7 +10,7 @@ patches:
 - path: ingress-patch.yaml
 images:
 - name: dockerhub.ebi.ac.uk/ebivariation/eva-submission-ws
-  newTag: dev-3216daa3
+  newTag: dev-dde292a0
 secretGenerator:
 - name: eva-submission-ws-config
   files:
