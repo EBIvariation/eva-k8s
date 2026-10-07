@@ -10,4 +10,4 @@ patches:
   patch: |
     - op: replace
       path: /spec/receivers/0/emailConfigs/0/headers/0/value
-      value: '[EVA staging] {{ template "email.default.subject" . }}'
+      value: '[EVA Kubernetes monitoring STAGING] {{ .Status | title }}: {{ .CommonLabels.alertname }} on {{ .CommonLabels.eva_service }} ({{ len .Alerts.Firing }} alerts)'
