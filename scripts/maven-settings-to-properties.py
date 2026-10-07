@@ -36,6 +36,8 @@ CONTIG_ALIAS_MAPPING = {
     'controller.auth.admin.username':  'contig-alias.admin-user',
     'controller.auth.admin.password':  'contig-alias.admin-password',
     'config.scaffolds.enabled':        'contig-alias.scaffolds-enabled',
+    'actuator.auth.username':          'eva.actuator.user',
+    'actuator.auth.password':          'eva.actuator.password',
     'ftp.proxy.host':                  '=null',
     'ftp.proxy.port':                  '=0'
 }
@@ -47,7 +49,9 @@ EVA_ACCESSION_WS_MAPPING = {
     'human.mongodb.uri':                         'mongodb://|eva.mongo.k8s.user|:|eva.mongo.k8s.password.url-encoded|@|eva.mongo.host|/admin',
     'human.mongodb.database':                    'eva.accession.mongo.human.database',
     'contig-alias.url':                          'contig-alias.url',
-    'eva.api.base-url':                          'eva.api.base-url'
+    'eva.api.base-url':                          'eva.api.base-url',
+    'actuator.auth.username':                    'eva.actuator.user',
+    'actuator.auth.password':                    'eva.actuator.password'
 }
 
 COUNT_STATS = {
@@ -55,19 +59,25 @@ COUNT_STATS = {
     'spring.datasource.username':       'eva.evapro.user',
     'spring.datasource.password':       'eva.evapro.password',
     'controller.auth.admin.username':   'eva.count-stats.username',
-    'controller.auth.admin.password':   'eva.count-stats.password'
+    'controller.auth.admin.password':   'eva.count-stats.password',
+    'actuator.auth.username':           'eva.actuator.user',
+    'actuator.auth.password':           'eva.actuator.password'
 }
 
 EVA_RELEASE = {
     'spring.datasource.url':            '|eva.evapro.jdbc.url|?currentSchema=|eva.evapro.eva-stats.schema|',
     'spring.datasource.username':       'eva.evapro.user',
-    'spring.datasource.password':       'eva.evapro.password'
+    'spring.datasource.password':       'eva.evapro.password',
+    'actuator.auth.username':           'eva.actuator.user',
+    'actuator.auth.password':           'eva.actuator.password'
 }
 
 DGVA_SERVER = {
     'spring.datasource.url':            'dgvapro.host',
     'spring.datasource.username':       'dgvapro.user',
-    'spring.datasource.password':       'dgvapro.passwd'
+    'spring.datasource.password':       'dgvapro.passwd',
+    'actuator.auth.username':           'eva.actuator.user',
+    'actuator.auth.password':           'eva.actuator.password'
 }
 
 EVA_SERVER = {
@@ -84,7 +94,9 @@ EVA_SERVER = {
     'db.collection-names.annotation-metadata':          'eva.mongo.collections.annotation-metadata',
     'db.collection-names.features':                     'eva.mongo.collections.features',
     'db.collection-names.annotations':                  'eva.mongo.collections.annotations',
-    'contig-alias.url':                                 'contig-alias.url'
+    'contig-alias.url':                                 'contig-alias.url',
+    'actuator.auth.username':                           'eva.actuator.user',
+    'actuator.auth.password':                           'eva.actuator.password'
 }
 
 VCF_DUMPER_WS_MAPPING = {
@@ -97,7 +109,9 @@ VCF_DUMPER_WS_MAPPING = {
     'db.collection-names.variants':                     'eva.mongo.collections.variants',
     'db.collection-names.annotation-metadata':          'eva.mongo.collections.annotation-metadata',
     'db.collection-names.features':                     'eva.mongo.collections.features',
-    'db.collection-names.annotations':                  'eva.mongo.collections.annotations'
+    'db.collection-names.annotations':                  'eva.mongo.collections.annotations',
+    'actuator.auth.username':                           'eva.actuator.user',
+    'actuator.auth.password':                           'eva.actuator.password'
 }
 
 EVA_SUBMISSION_WS_MAPPING = {
@@ -119,7 +133,9 @@ EVA_SUBMISSION_WS_MAPPING = {
     'eva.email.port':                         'eva.email-port',
     'webin.userinfo.url':                     'webin.userinfo-url',
     'callhome.schema.url':                    'callhome.schema-url',
-    'eva.submission.account':                 'eva.submission.account'
+    'eva.submission.account':                 'eva.submission.account',
+    'actuator.auth.username':                 'eva.actuator.user',
+    'actuator.auth.password':                 'eva.actuator.password'
 }
 
 # The monitoring.env file (same key=value format) of the eva-monitoring overlays.
