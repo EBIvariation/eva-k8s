@@ -235,24 +235,25 @@ kustomize build k8s-manifests/eva-seqcol/overlays/dev
 
 ## Monitoring
 
-Metrics, alerts and their thresholds, alert routing and the rollout procedure are described in
-[`docs/monitoring.md`](./docs/monitoring.md). In short:
-
 - [`k8s-manifests/eva-monitoring`](./k8s-manifests/eva-monitoring) is not a service. It holds the monitoring
   shared by all services, deployed once per cluster in the `eva-monitoring` namespace: one `ServiceMonitor` that
   makes Prometheus scrape every monitored service, one `PrometheusRule` with the alert rules, and one
-  `AlertmanagerConfig` that emails the alerts. It has its own GitLab pipeline, [`.gitlab-ci.yml`](./.gitlab-ci.yml)
-  at the root of this repository, in which every deployment is started by hand: run the pipeline on `main`,
-  then start the job of each cluster.
+  `AlertmanagerConfig` that emails the alerts. Every deployment is started by hand: run the foloowing commands:
+```bash
+MAVEN_PROFILE=<development | production_processing | production >
+OVERLAY_PATH=k8s-manifests/eva-monitoring/overlays/<dev | staging | prod>
+# Generate monitoring.env from the Maven settings
+python scripts/maven-settings-to-properties.py --maven_file maven-settings.xml --property_set monitoring --profile $MAVEN_PROFILE" --output k8s-manifests/eva-monitoring/base/monitoring.env
+# The namespace is not part of the overlay
+kubectl apply -f k8s-manifests/eva-monitoring/base/namespace.yaml
+kubectl apply -k "$OVERLAY_PATH"
+```
+
 - A monitored service serves the actuator on a separate management port (9090) that requires authentication and
   is not routed by the ingress, and its probes use `<context-path>/livez` and `<context-path>/readyz` on the
-  application port. Its `dev`, `staging` and `prod` overlays include the component
+  application port. Each overlay must include the component
   `eva-monitoring/service-component`, which labels the Service for scraping and adds a `NetworkPolicy` restricting
   the management port to Prometheus. There is no monitoring file to write per service.
-- Nothing sensitive is committed. Prometheus authenticates with the `actuator-credentials` Secret, and the
-  `AlertmanagerConfig` only holds placeholders for the recipient, sender and mail server. Both are filled at
-  deploy time from `monitoring.env`, produced by `scripts/maven-settings-to-properties.py` with the `monitoring`
-  property set.
 
 The pod, resource and ingress alerts cover every service; application metrics are scraped for every service except
 `eva-web`, which has no actuator.
