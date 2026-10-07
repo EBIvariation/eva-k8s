@@ -3,6 +3,9 @@ kind: Kustomization
 namespace: eva-accession-ws
 resources:
 - ../../base
+# Monitored service: restrict the management port and opt in to scraping
+components:
+- ../../../eva-monitoring/service-component
 patches:
 - path: deployment-patch.yaml
 - path: ingress-patch.yaml

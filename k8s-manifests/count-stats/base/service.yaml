@@ -11,5 +11,9 @@ spec:
     port: 8080
     targetPort: 8080
     protocol: TCP
+  - name: management
+    port: 9090
+    targetPort: management
+    protocol: TCP
   selector:
     app: count-stats

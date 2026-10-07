@@ -36,7 +36,13 @@ spec:
       - name: vcf-dumper-ws
         imagePullPolicy: Always
         ports:
-        - containerPort: 8080
+        # The port names are what the shared NetworkPolicy and ServiceMonitor of eva-monitoring refer to
+        - name: http
+          containerPort: 8080
+          protocol: TCP
+        # Actuator (metrics). Not routed by the ingress and only reachable by Prometheus
+        - name: management
+          containerPort: 9090
           protocol: TCP
 
         env:
@@ -54,9 +60,11 @@ spec:
             memory: "2Gi"
             cpu: "1000m"
 
+        # The actuator endpoints require authentication, which the kubelet cannot provide, so the application also
+        # serves its liveness and readiness health groups (status only) on the application port.
         livenessProbe:
           httpGet:
-            path: /eva/webservices/vcf-dumper/actuator/health/liveness
+            path: /eva/webservices/vcf-dumper/livez
             port: 8080
           initialDelaySeconds: 60
           periodSeconds: 30
@@ -65,7 +73,7 @@ spec:
 
         readinessProbe:
           httpGet:
-            path: /eva/webservices/vcf-dumper/actuator/health/readiness
+            path: /eva/webservices/vcf-dumper/readyz
             port: 8080
           initialDelaySeconds: 30
           periodSeconds: 10
