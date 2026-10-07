@@ -3,7 +3,6 @@ kind: Kustomization
 namespace: dgva-server
 resources:
 - ../../base
-# Monitored service: restrict the management port and opt in to scraping
 components:
 - ../../../eva-monitoring/service-component
 patches:
@@ -11,7 +10,7 @@ patches:
 - path: ingress-patch.yaml
 images:
 - name: dockerhub.ebi.ac.uk/ebivariation/eva-ws
-  newTag: dgva-server-dev-c9142c72
+  newTag: dgva-server-dev-d082db71
 secretGenerator:
 - name: dgva-server-config
   files:
