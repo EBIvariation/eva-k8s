@@ -3,7 +3,6 @@ kind: Kustomization
 namespace: eva-accession-ws
 resources:
 - ../../base
-# Monitored service: restrict the management port and opt in to scraping
 components:
 - ../../../eva-monitoring/service-component
 patches:
@@ -11,7 +10,7 @@ patches:
 - path: ingress-patch.yaml
 images:
 - name: dockerhub.ebi.ac.uk/ebivariation/eva-accession
-  newTag: eva-accession-ws-v1.1.2
+  newTag: eva-accession-ws-v1.1.3
 secretGenerator:
 - name: eva-accession-ws-config
   files:
