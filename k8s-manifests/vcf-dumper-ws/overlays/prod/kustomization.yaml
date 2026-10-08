@@ -3,7 +3,6 @@ kind: Kustomization
 namespace: vcf-dumper-ws
 resources:
 - ../../base
-# Monitored service: restrict the management port and opt in to scraping
 components:
 - ../../../eva-monitoring/service-component
 patches:
@@ -11,7 +10,7 @@ patches:
 - path: ingress-patch.yaml
 images:
 - name: dockerhub.ebi.ac.uk/ebivariation/vcf-dumper
-  newTag: vcf-dumper-ws-v1.0.0
+  newTag: vcf-dumper-ws-v1.0.1
 secretGenerator:
 - name: vcf-dumper-ws-config
   files:
