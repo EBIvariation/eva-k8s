@@ -2,14 +2,6 @@
 
 What is measured, what raises an alert and at which threshold, where alerts go, and what to do next.
 
-**Status:** the monitoring is shared by all services and lives in `k8s-manifests/eva-monitoring`. The alerts on
-pods, resources and ingress traffic cover every service as soon as it is deployed. Application metrics need a
-change in each application; it is prepared for the nine Spring Boot services (every service except eva-web, which
-has no actuator) and must be released together with the manifests of this repository
-(see [Releasing the change](#releasing-the-change)). The cluster facts below were read from
-the **staging** cluster; dev, prod and prod-fallback must be checked before their first deployment
-(see [Before the first deployment](#before-the-first-deployment)).
-
 ## How it fits together
 
 ```
@@ -125,9 +117,7 @@ Prometheus keeps 10 days of data (`retention` in the cluster team's `Prometheus`
 ### Logs
 
 Fluent Bit already collects the stdout of every container and sends it to the central Elasticsearch, with the
-Kubernetes namespace, pod and container attached. Nothing was changed. Two known gaps: a stack trace arrives as
-one document per line, and the Tomcat access log is written to a file inside the pod and is not collected
-(the ingress-nginx access log is).
+Kubernetes namespace, pod and container attached. Nothing further is done with the logs.
 
 ## Alerts
 
@@ -178,11 +168,6 @@ is not delivered.
 - grouped by alert name and service; first email 30 seconds after the alert fires, updates at most every 5 minutes, a
   reminder every 12 hours while it keeps firing, and an email when it resolves
 
-Limitations:
-
-- `critical` and `warning` go to the same address.
-- The cluster team's global Alertmanager configuration drops everything else, so only alerts defined here are delivered.
-
 To silence an alert during maintenance:
 
 ```bash
@@ -211,24 +196,9 @@ automatic: in GitLab, **Build → Pipelines → Run pipeline** on `main`, then s
   `eva-monitoring` namespace, then applies the overlay.
 - Jobs left unstarted do not mark the pipeline as blocked or failed.
 
-## Releasing the change
-
-The manifests are read from `main` at deploy time and the new probes only work with the new images, so the
-change in this repository and the change in the application repositories go out together:
-
-1. Merge the change in this repository (all nine services at once).
-2. Straight after, merge the application changes: eva-ws (eva-server, eva-release, count-stats, dgva-server),
-   eva-accession (eva-accession-ws), eva-seqcol, contig-alias, eva-submission-ws and vcf-dumper (vcf-dumper-ws).
-   Each merge deploys the new image with the new manifests to dev and staging.
-3. Check each service on staging (step 4 below), then tag each application to release it to prod and
-   prod-fallback.
-
-Between steps 1 and 2, a deployment of a service whose application change is not merged yet fails without harm
-(the new pods never become ready and the old ones keep serving). Production is untouched until the tags.
-
 ## Adding monitoring to a service
 
-For a new service, or to redo it for one service. Both repositories change together, as above:
+For a new service, or to redo it for one service. Both application and eva-k8s repositories change together:
 
 1. Application repository: add `micrometer-registry-prometheus`, the `management.*` properties, the actuator
    security chain and user, and the test credentials (`actuator.auth.*`) in the test properties. eva-seqcol is the
@@ -246,19 +216,16 @@ For a new service, or to redo it for one service. Both repositories change toget
 
    No monitoring file is created. A brand new service must also be added to the namespace list at the top of
    `eva-monitoring/base/prometheusrule.yaml`, then the monitoring pipeline run by hand for each cluster.
-3. Merge the change in this repository, then immediately merge the application change. Its pipeline deploys
-   both to dev and staging.
-4. Check on staging:
+3. Merge the change in this repository and manually deploy the monitoring via gitlab. Immediately merge and deploy the application change.
+4. Check on dev/staging:
    - `up{namespace="<svc>", endpoint="management"}` is 1 in Prometheus and `jvm_memory_used_bytes{namespace="<svc>"}` has data
-   - `https://wwwdev.ebi.ac.uk/<context-path>/actuator/prometheus` returns 404
+   - `https://wwwint.ebi.ac.uk/<context-path>/actuator/prometheus` returns 404
    - scale the deployment to 0 for a few minutes and confirm the `ServiceDown` email arrives
-5. Tag the application to release to prod and prod-fallback.
+5. manually deploy eva-k8s's monitoring to production and production-fallback
+6. Tag the application to release to prod and prod-fallback.
 
-Until step 5, production is untouched. Redeploying an older tag after step 3 fails without harm (the rollout
+Until step 5 and 6, production is untouched. Redeploying an older tag after step 3 fails without harm (the rollout
 never completes and the old pods keep serving); rolling back after step 5 means reverting the commit of step 2 too.
-
-Public `/actuator/health` and `/actuator/info` (for eva-seqcol and contig-alias, `/health` and `/info`)
-disappear with this change, for every service. Anything outside the cluster that polls them must use `<context-path>/readyz`.
 
 ## Next steps: Grafana dashboards
 
