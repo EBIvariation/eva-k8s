@@ -13,4 +13,4 @@ patches:
   path: ingress-patch.yaml
 images:
 - name: dockerhub.ebi.ac.uk/ebivariation/eva-web
-  newTag: staging-5d19ea4b
+  newTag: staging-bb988c32
