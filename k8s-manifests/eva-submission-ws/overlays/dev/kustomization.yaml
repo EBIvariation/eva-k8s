@@ -10,7 +10,7 @@ patches:
 - path: ingress-patch.yaml
 images:
 - name: dockerhub.ebi.ac.uk/ebivariation/eva-submission-ws
-  newTag: dev-6fe21e1f
+  newTag: dev-3ea8d22e
 secretGenerator:
 - name: eva-submission-ws-config
   files:
