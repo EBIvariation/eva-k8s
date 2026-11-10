@@ -1,0 +1,93 @@
+# Deploys the monitoring shared by all EVA services (k8s-manifests/eva-monitoring) to each cluster.
+#
+# This pipeline runs in the GitLab mirror of this repository. The services themselves are deployed by the
+# pipelines of their own repositories (see gitlab-ci/webservice.yml), not by this one.
+#
+# Nothing is deployed automatically. To deploy: Build > Pipelines > Run pipeline on main, then start the job of
+# each cluster to update. Do it after a change to k8s-manifests/eva-monitoring, or after the credentials or the
+# alert addresses change in the Maven settings.
+#
+# REQUIRED GitLab CI/CD variables:
+# GITHUB_USER / GITHUB_TOKEN: read access to the private EBIvariation/configuration repository (kubeconfigs and
+#                             Maven settings)
+
+# Reuse the kubeconfig locations defined for the service deployments (the template's jobs are not run)
+include:
+  - local: gitlab-ci/webservice.yml
+
+stages:
+  - deploy
+
+# A pipeline is only created when it is started by hand on main. Commits mirrored from GitHub, including the image
+# tag commits that the service deployments push many times a day, do not create one.
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "web" && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - when: never
+
+.deploy_monitoring:
+  stage: deploy
+  image: alpine:latest
+  rules:
+    # Every deployment is started by hand. allow_failure keeps the pipeline from showing as blocked while some
+    # clusters are left alone.
+    - when: manual
+      allow_failure: true
+  variables:
+    OVERLAY_PATH: k8s-manifests/eva-monitoring/overlays/$OVERLAY
+  before_script:
+    - apk add --no-cache curl python3 kubectl
+    - python3 -m venv $HOME/.venv
+    - source $HOME/.venv/bin/activate
+    - pip install --no-cache-dir lxml retry cached-property pyyaml requests
+    - pip install --no-dependencies -r scripts/requirements.txt
+    - mkdir -p ~/.kube
+    # Download the kubernetes cluster configuration from the private repository
+    - curl -fsS -u $GITHUB_USER:$GITHUB_TOKEN -H "Accept:application/vnd.github.raw" $KUBECONFIG_FILE > ~/.kube/config
+    - chmod 600 ~/.kube/config
+  script:
+    # Generate monitoring.env from the Maven settings: the credentials Prometheus scrapes the actuators with, and
+    # the alert email settings
+    - curl -fsS -u $GITHUB_USER:$GITHUB_TOKEN -H "Accept:application/vnd.github.raw" "https://api.github.com/repos/EBIvariation/configuration/contents/eva-maven-settings.xml" > maven-settings.xml
+    - python scripts/maven-settings-to-properties.py --maven_file maven-settings.xml --property_set monitoring --profile "$MAVEN_PROFILE" --output k8s-manifests/eva-monitoring/base/monitoring.env
+
+    # The namespace is not part of the overlay
+    - kubectl apply -f k8s-manifests/eva-monitoring/base/namespace.yaml
+
+    - kubectl apply -k "$OVERLAY_PATH"
+
+deploy-monitoring:dev:
+  extends: .deploy_monitoring
+  variables:
+    OVERLAY: dev
+    MAVEN_PROFILE: development
+    KUBECONFIG_FILE: $KUBECONFIG_FILE_DEV
+  environment:
+    name: monitoring/dev
+
+deploy-monitoring:staging:
+  extends: .deploy_monitoring
+  variables:
+    OVERLAY: staging
+    MAVEN_PROFILE: production_processing
+    KUBECONFIG_FILE: $KUBECONFIG_FILE_STAGING
+  environment:
+    name: monitoring/staging
+
+deploy-monitoring:prod:
+  extends: .deploy_monitoring
+  variables:
+    OVERLAY: prod
+    MAVEN_PROFILE: production
+    KUBECONFIG_FILE: $KUBECONFIG_FILE_PROD
+  environment:
+    name: monitoring/prod
+
+deploy-monitoring:prod-fallback:
+  extends: .deploy_monitoring
+  variables:
+    OVERLAY: prod-fallback
+    MAVEN_PROFILE: production,production-fallback
+    KUBECONFIG_FILE: $KUBECONFIG_FILE_PROD_FALLBACK
+  environment:
+    name: monitoring/prod-fallback
