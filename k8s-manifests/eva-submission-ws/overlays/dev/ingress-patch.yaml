@@ -3,16 +3,14 @@ kind: Ingress
 metadata:
   name: eva-submission-ws
   annotations:
-    # The ingress controller does not set use-forwarded-headers, so it sends X-Forwarded-Proto: http
-    # even though clients reach us over https via the EBI front proxy. Force https so the app
-    # (server.forward-headers-strategy=framework) generates https URLs, e.g. the Swagger "servers" entry.
-    # Override the variable used by the controller's own "proxy_set_header X-Forwarded-Proto" rather than
-    # adding a second proxy_set_header, which would send both "http" and "https" (Spring uses the first).
-    # Also drop any RFC 7239 "Forwarded" header from upstream proxies: Spring gives it priority over
-    # X-Forwarded-*, so a "Forwarded: proto=http" would still produce http URLs.
+    # The ingress controller does not enable use-forwarded-headers, so it sends X-Forwarded-Proto: http
+    # even though clients reach us over https via the EBI front proxy. That value cannot be overridden from a
+    # snippet: a second proxy_set_header sends both values (Spring uses the first), and
+    # "set $pass_access_scheme" is reset by the controller's rewrite_by_lua_block.
+    # Instead send an RFC 7239 Forwarded header, which Spring (server.forward-headers-strategy=framework)
+    # uses in preference to X-Forwarded-*, so generated URLs (e.g. the Swagger "servers" entry) are https.
     nginx.ingress.kubernetes.io/configuration-snippet: |
-      set $pass_access_scheme https;
-      proxy_set_header Forwarded "";
+      proxy_set_header Forwarded "proto=https;host=$host";
 spec:
   rules:
   - host: wwwint.ebi.ac.uk
