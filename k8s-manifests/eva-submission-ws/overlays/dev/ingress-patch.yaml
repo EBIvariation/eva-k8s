@@ -8,8 +8,11 @@ metadata:
     # (server.forward-headers-strategy=framework) generates https URLs, e.g. the Swagger "servers" entry.
     # Override the variable used by the controller's own "proxy_set_header X-Forwarded-Proto" rather than
     # adding a second proxy_set_header, which would send both "http" and "https" (Spring uses the first).
+    # Also drop any RFC 7239 "Forwarded" header from upstream proxies: Spring gives it priority over
+    # X-Forwarded-*, so a "Forwarded: proto=http" would still produce http URLs.
     nginx.ingress.kubernetes.io/configuration-snippet: |
       set $pass_access_scheme https;
+      proxy_set_header Forwarded "";
 spec:
   rules:
   - host: wwwint.ebi.ac.uk
