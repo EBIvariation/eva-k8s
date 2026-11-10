@@ -6,8 +6,10 @@ metadata:
     # The ingress controller does not set use-forwarded-headers, so it sends X-Forwarded-Proto: http
     # even though clients reach us over https via the EBI front proxy. Force https so the app
     # (server.forward-headers-strategy=framework) generates https URLs, e.g. the Swagger "servers" entry.
+    # Override the variable used by the controller's own "proxy_set_header X-Forwarded-Proto" rather than
+    # adding a second proxy_set_header, which would send both "http" and "https" (Spring uses the first).
     nginx.ingress.kubernetes.io/configuration-snippet: |
-      proxy_set_header X-Forwarded-Proto https;
+      set $pass_access_scheme https;
 spec:
   rules:
   - host: wwwint.ebi.ac.uk
