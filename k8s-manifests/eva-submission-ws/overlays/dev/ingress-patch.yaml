@@ -2,6 +2,12 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: eva-submission-ws
+  annotations:
+    # The ingress controller does not set use-forwarded-headers, so it sends X-Forwarded-Proto: http
+    # even though clients reach us over https via the EBI front proxy. Force https so the app
+    # (server.forward-headers-strategy=framework) generates https URLs, e.g. the Swagger "servers" entry.
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      proxy_set_header X-Forwarded-Proto https;
 spec:
   rules:
   - host: wwwint.ebi.ac.uk
